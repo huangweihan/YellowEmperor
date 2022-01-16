@@ -1,0 +1,70 @@
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:com="http://common.ws.yn.oss.ztesoft.com">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <com:rscService soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+            <infType xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">IOMFORWFM</infType>
+            <head xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"></head>
+            <body xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">
+                <![CDATA[
+            <?xml version="1.0" encoding="UTF-8"?>
+            <root>
+            	<IDA_SVR_OPEN>
+            		<INPUT_XMLDATA>
+            			<LineOrder>
+            				<OrderInfos>
+            					<OrderInfo>
+            						<OrderId>8832111241851294608</OrderId>
+            						<BssOrderId>5786739</BssOrderId>
+            						<BackReason/>
+            						<OperaterName></OperaterName>
+            					</OrderInfo>
+            				</OrderInfos>
+            				<Association>-1</Association>
+            				<BillType>01</BillType>
+                    <Status>01</Status>
+                    <RevertTime>null</RevertTime>
+                    <CompleteTime>null</CompleteTime>
+                    <BackReasonDesc>回单备注: 测试单</BackReasonDesc>
+                    <TERMINALTYPE/>
+                    <NearbyNum/>
+                    <OBDNum/>
+                    <OperaterName>汪杰</OperaterName>
+                    <orgName/>
+                    <SubreturnReason/>
+                    <SubreturnReasonId/>
+                    <Remark>回单备注: 测试单</Remark>
+                    <Flag>1</Flag>
+                    <preDate/>
+                    <preInstallDate/>
+                    <WorkUserId>256346</WorkUserId>
+                    <WorkUserName>汪杰</WorkUserName>
+                    <WorkUserPhone>18008801090</WorkUserPhone>
+                    <CNUMAC/>
+                    <ExchId/>
+                    <ExchName/>
+                    <InstAddress></InstAddress>
+                    <VarRate/>
+                    <LSGH></LSGH>
+                    <UIM></UIM>
+                    <XBKBZ></XBKBZ>
+                    <SMCS></SMCS>
+                    <orderItemIots>
+
+                    </orderItemIots>
+                  </LineOrder>
+                </INPUT_XMLDATA>
+              </IDA_SVR_OPEN>
+              <ete_info>
+                <ete_sceneCode>11111110001</ete_sceneCode>
+                <ete_inftype>1</ete_inftype>
+                <ete_traceId>be7d58b51f6b11eca816df6784814c0f</ete_traceId>
+                <ete_id>1611ef28b24f4234af931f3d5969a5ec</ete_id>
+                <ete_parentId>d16e92eb00a249cd9de33bd1bb6360fb</ete_parentId>
+                <ete_bcId></ete_bcId>
+              </ete_info>
+            </root>
+          ]]>
+            </body>
+        </com:rscService>
+    </soapenv:Body>
+</soapenv:Envelope>
