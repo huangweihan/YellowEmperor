@@ -7,7 +7,6 @@ import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.iwhalecloud.config.InterfaceConfig;
-import org.iwhalecloud.constant.FkMessageConstant;
 import org.iwhalecloud.constant.InterfaceNameContent;
 import org.iwhalecloud.dao.impl.MessageDaoImpl;
 import org.iwhalecloud.utils.FileUtils;
@@ -28,11 +27,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @EnableAsync
@@ -73,6 +70,7 @@ public class MessageTask {
         for (Map<String, Object> ocApiInstMap : ocApiInstList) {
             execute(ocApiInstMap);
         }
+        logger.info(" =========== 定时任务结束 =========== ");
     }
 
     private void execute(Map<String, Object> ocApiInstMap) throws Exception {
@@ -86,7 +84,7 @@ public class MessageTask {
         String orderCode = fields[1];
         // 通过 编排环节id 查询配置表 转换得到 服开环节id
         List<Map<String, Object>> tacheMapList = bpJdbcTemplate.queryForList(GET_FK_TACHE_ID_SQL, bpTacheId);
-        // todo 判断当前是资源请求还是综调请求
+        // 判断当前是资源请求还是综调请求
         Map<String, String> sourceMap = judgeRequestSource(bpMessage);
         String type = MapUtils.getString(sourceMap, "type");
 
@@ -121,11 +119,9 @@ public class MessageTask {
         Assert.notNull(bpMessage, "编排对比报文不能为空");
         Element rootElement = DocumentHelper.parseText(bpMessage).getRootElement();
         Element subElement = rootElement.element("Body").elements().get(0).element("body");
-        JSONObject bp = new JSONObject();
-        JSONUtils.dom4j2Json(DocumentHelper.parseText(subElement.getTextTrim()).getRootElement(), bp);
+        JSONObject bp = JSONUtils.dom4j2Json(DocumentHelper.parseText(subElement.getTextTrim()).getRootElement());
 
-        JSONObject fk = new JSONObject();
-        JSONUtils.dom4j2Json(DocumentHelper.parseText(fkSendOrderMessage).getRootElement(), fk);
+        JSONObject fk = JSONUtils.dom4j2Json(DocumentHelper.parseText(fkSendOrderMessage).getRootElement());
 
         MessageCompareUtils.compare(bp, fk, "root");
     }
@@ -149,27 +145,6 @@ public class MessageTask {
         return null;
     }
 
-    // 获取回单访问路径
-    @Deprecated
-    private String getReceiptUrl(String fkMessage) throws DocumentException {
-        Document document = DocumentHelper.parseText(fkMessage);
-        Element rootElement = document.getRootElement();
-        String infType = rootElement.element("Body").elements().get(0).element("infType").getText();
-        if ("resBackOrderRequest".equals(infType) || "resSurveyOrWaitRequest".equals(infType)) {
-            logger.info("=========资源待装/退单接口==========");
-            return interfaceConfig.getResToBeInstalledServiceUrl();
-        } else if ("resAssignResponse".equals(infType)) {
-            logger.info("=========资源配置反馈==========");
-            return interfaceConfig.getResourceWebServiceUrl();
-        } else if ("ResConfirmRet".equals(infType) || "IOMFORWFM".equals(infType)) {
-            logger.info("=========外线资源确认/综调回单==========");
-            return interfaceConfig.getIntegratedSchedulWebServiceUrl();
-        } else {
-            logger.error("未知 infType [{}] 请检查！", infType);
-            throw new RuntimeException("infType = " + infType + "无法被识别处理");
-        }
-    }
-
     /**
      * 获取服开派单报文和回单报文
      *
@@ -184,7 +159,7 @@ public class MessageTask {
         Map<String, Object> backOrderMap = new HashMap<>();
         for (Map<String, Object> tacheMap : tacheMapList) {
             String fkTacheId = MapUtils.getString(tacheMap, "fk_tache_id");
-            // todo 根据转换之后的编码得到服开报文
+            // 根据转换之后的编码得到服开报文
             if ("res".equals(type)) {
                 sendOrderMap = messageDao.queryResSendOrderMessage(orderCode, fkTacheId);
                 backOrderMap = messageDao.queryResBackOrderMessage(orderCode, fkTacheId);
@@ -193,7 +168,7 @@ public class MessageTask {
                 backOrderMap = messageDao.queryZdBackOrderMessage(orderCode, fkTacheId);
             }
 
-            if (!sendOrderMap.isEmpty() && !backOrderMap.isEmpty()) {
+            if (sendOrderMap.isEmpty() || backOrderMap.isEmpty()) {
                 try {
                     // 服开派单报文
                     messageMap.put("IOM_XML", new String((byte[]) sendOrderMap.get("IOM_XML"), "GBK"));
@@ -210,16 +185,20 @@ public class MessageTask {
 
     /**
      * 替换派单服开报文中的 workOrderId
+     * @param xml   待替换的服开派单报文
      */
-    private String replaceMessage(String xml, String workOrderId) throws DocumentException {
-        Document document = DocumentHelper.parseText(xml);
-        Element rootElement = document.getRootElement();
-        rootElement.element("baseInfo").element("workOrderId").setText(workOrderId);
-        return document.getRootElement().asXML();
+    private String replaceMessage(String xml, String workOrderId) {
+        try {
+            Document document = DocumentHelper.parseText(xml);
+            Element rootElement = document.getRootElement();
+            rootElement.element("baseInfo").element("workOrderId").setText(workOrderId);
+            return document.getRootElement().asXML();
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-
-    // 资源请求 综调请求
     // map -> 通过报文 得到url 以及 请求来源 资源 | 综调
     private Map<String, String> judgeRequestSource(String message) throws DocumentException {
         Assert.hasText(message, "用于判断请求来源的报文不能为空");

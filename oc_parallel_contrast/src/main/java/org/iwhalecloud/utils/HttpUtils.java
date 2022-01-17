@@ -52,69 +52,76 @@ public class HttpUtils {
             RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(30000).setSocketTimeout(30000).setStaleConnectionCheckEnabled(true).build();
             httpPost.setConfig(requestConfig);
             HttpContext httpContext = new BasicHttpContext();
+            log.info(" ===== http请求参数[{}] ==== ", requestParam);
             HttpResponse response = httpClient.execute(httpPost, httpContext);
             // 响应结果处理
             HttpEntity httpEntity = response.getEntity();
             InputStream inputStream = httpEntity.getContent();
             requestResult = IOUtils.toString(inputStream);
+            log.info(" ===== http请求结果[{}] ==== ", requestResult);
         } catch (Exception e) {
             log.error("请求参数[{}] - 请求路径[{}] - 请求异常[{}]", requestParam, targetUrl, e);
         }
         return requestResult;
     }
 
+    /**
+     * wb请求
+     * @param requestParam 请求参数
+     * @param targetUrl 请求路径
+     * @return 请求结果
+     */
     public static String callWebService(String requestParam, String targetUrl) {
-        String rspStr = "";
+        String requestResult = "";
         PrintWriter out = null;
         ByteArrayOutputStream bos = null;
         BufferedInputStream bis = null;
         try {
-            //创建url连接
+            // 创建url连接
             URL url = new URL(targetUrl);
-            //设置请求类型
-            //打开连接
+            // 打开连接
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setDoInput(true);
-            //设置请求参数
+            // 设置请求参数
             connection.setRequestProperty("Content-Type", "text/xml;charset=UTF-8");
             connection.setRequestProperty("Transfer-Encoding", "gzip,deflate");
             connection.setRequestProperty("connection", "close");
             connection.setRequestProperty("user-agent",
                     "Jakarta Commons-HttpClient/3.1");
             connection.setRequestProperty("SOAPAction", "");
-            //建立实际连接
+            log.info(" ===== wb请求参数[{}] ==== ", requestParam);
+            // 建立实际连接
             connection.connect();
             // 获取URLConnection对象对应的输出流
             out = new PrintWriter(connection.getOutputStream());
-            //删除参数
+            // 删除参数
             out.print(requestParam);
             // flush输出流的缓冲
             out.flush();
-            //获取对应的数据
-            //字节流
+            // 获取对应的数据字节流
             bos = new ByteArrayOutputStream();
             byte[] buf = new byte[1024];
             int c = 0;
-            //如果获取的结果是成功的
+            // 如果获取的结果是成功的
             if (connection.getResponseCode() == 200) {
-                //读取数据
+                // 读取数据
                 bis = new BufferedInputStream(connection.getInputStream());
             } else {
-                //如果不是200，那就是出问题,获取错误流
+                // 如果不是200，那就是出问题,获取错误流
                 bis = new BufferedInputStream(connection.getErrorStream());
             }
             while ((c = bis.read(buf)) != -1) {
                 bos.write(buf, 0, c);
                 bos.flush();
             }
-            //获取数据
-            rspStr = bos.toString();
-            log.info("HttpRequestUtils.httpWebService.result===============>" + rspStr);
-            rspStr = rspStr.replaceAll("<\\?xml version=\"1.0\" encoding=\"GB2312\"\\?>", "");
-            rspStr = rspStr.replaceAll("<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>", "");
-            return rspStr;
+            // 获取数据
+            requestResult = bos.toString();
+            log.info(" ===== http请求结果[{}] ==== ", requestResult);
+            requestResult = requestResult.replaceAll("<\\?xml version=\"1.0\" encoding=\"GB2312\"\\?>", "");
+            requestResult = requestResult.replaceAll("<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>", "");
+            return requestResult;
         } catch (Exception e) {
             log.error("Exception error =========>HttpRequestUtils.httpWebService.error===============>{}",e.getMessage());
         } finally {
@@ -133,7 +140,7 @@ public class HttpUtils {
                 log.error("IOException error-======>HttpRequestUtils.httpWebService.error===============>{}",ex.getMessage());
             }
         }
-        return rspStr;
+        return requestResult;
     }
 
 }

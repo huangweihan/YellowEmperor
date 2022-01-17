@@ -1,6 +1,7 @@
 package org.iwhalecloud.constant;
 
 public class FkMessageConstant {
+
     private FkMessageConstant(){}
 
     // 服开 - 资源派单报文查询
