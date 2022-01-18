@@ -1,37 +1,7 @@
-<root>
-    <expInfo>
-        <orderItem>
-            <itemSpecId>3000</itemSpecId>
-            <desc>局向ID</desc>
-            <seq>1</seq>
-            <newItemVal>000101125282</newItemVal>
-            <oldItemVal/>
-        </orderItem>
-        <orderItem>
-            <itemSpecId>10042</itemSpecId>
-            <desc>标准地址ID</desc>
-            <seq>1xx</seq>
-            <newItemVal>28244148</newItemVal>
-            <oldItemVal/>
-        </orderItem>
-        <orderItem>
-            <itemSpecId>300084</itemSpecId>
-            <desc>同址电话标识</desc>
-            <seq>1</seq>
-            <newItemVal>999</newItemVal>
-            <oldItemVal/>
-        </orderItem>
-        <orderItem>
-            <itemSpecId>300084</itemSpecId>
-            <desc>同址电话标识</desc>
-            <seq>1</seq>
-            <newItemVal>999</newItemVal>
-            <oldItemVal/>
-        </orderItem>
-    </expInfo>
-    <baseInfo>
-        <orderId>8712109271535023734</orderId>
-        <workOrderId>5786735</workOrderId>
-        <productId>66001170002</productId>
-    </baseInfo>
-</root>
+<?xml version="1.0" encoding="UTF-8"?>
+<SERVICE_ORDER_PACKAGE>
+    <OM_SERVICE_ORDER CRM_SO_ID="6922201181325075746" IOM_ORDER_CODE="6922201181325075746">
+        <OM_SO_ATTR ATTR_CODE="ADDR_STD_NAME" ATTR_VALUE="云南省德宏州瑞丽市勐卯镇老城子东一(东一公房)"/>
+        <OM_SO_ATTR ATTR_CODE="CRM_NBR" ATTR_VALUE="N"/>
+    </OM_SERVICE_ORDER>
+</SERVICE_ORDER_PACKAGE>

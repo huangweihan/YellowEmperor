@@ -6,8 +6,8 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageCompareUtils {
@@ -25,9 +25,10 @@ public class MessageCompareUtils {
         attrMap.put("oldItemVal", "1");
     }
 
-    public static void compare(JSONObject oldObj, JSONObject newObj, String path) {
-        Set<Map.Entry<String, Object>> oldEntrySet = oldObj.entrySet();
+    // private static List<String> list = new ArrayList<>();
 
+    public static void compare(JSONObject oldObj, JSONObject newObj, String path, List<String> list) {
+        Set<Map.Entry<String, Object>> oldEntrySet = oldObj.entrySet();
         for (Map.Entry<String, Object> entry : oldEntrySet) {
             String key = entry.getKey();
             Object value = entry.getValue();
@@ -36,14 +37,14 @@ public class MessageCompareUtils {
                 String oldValue = (String) value;
                 String newValue = newObj.getString(key);
                 if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
-                    System.out.printf("旧报文\n%s\n新报文\n%s\n节点路径 [%s]\n", displayJsonAsXml(oldValue, key),
-                            displayJsonAsXml(newValue, key), (path + "." + key));
-                    System.out.println("-----------------------------------------------------");
+//                    System.out.printf("旧报文\n%s\n新报文\n%s\n节点路径 [%s]\n", displayJsonAsXml(oldValue, key),
+//                            displayJsonAsXml(newValue, key), (path + "." + key));
+                    list.add(assemblyDiff(oldValue, newValue, key, path));
                 }
             } else if (value instanceof JSONObject) {
                 JSONObject oldJsonObject = (JSONObject) value;
                 JSONObject newJsonObject = newObj.getJSONObject(key);
-                compare(oldJsonObject, newJsonObject, path + "." + key);
+                compare(oldJsonObject, newJsonObject, path + "." + key, list);
             } else if (value instanceof JSONArray) {
                 JSONArray oldJsonArray = (JSONArray) value;
                 for (Object old : oldJsonArray) {
@@ -52,18 +53,18 @@ public class MessageCompareUtils {
                     List<JSONObject> newJsonObjectList = getJsonObject(newJsonArray, oldJsonObject);
                     if (newJsonObjectList.isEmpty()) {
                         // 说明旧报文中的 JsonObject 在新报文中找不到
-                        System.out.printf("新报文中缺失节点：\n %s 节点路径：%s\n", displayJsonAsXml(oldJsonObject, key), (path + "." + key));
-                        System.out.println("-----------------------------------------------------");
+                        // System.out.printf("新报文中缺失节点：\n %s 节点路径：%s\n", displayJsonAsXml(oldJsonObject, key), (path + "." + key));
+                        list.add(assemblyDiff(oldJsonObject, key, path));
                     } else if (newJsonObjectList.size() > 1) {
                         // 说明新报文中出现了重复的节点
-                        System.out.printf("新报文节点重复：旧报文\n %s\n新报文\n %s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
-                                displayJsonAsXml(newJsonObjectList, key), (path + "." + key));
-                        System.out.println("-----------------------------------------------------");
+//                        System.out.printf("新报文节点重复：旧报文\n %s\n新报文\n %s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
+//                                displayJsonAsXml(newJsonObjectList, key), (path + "." + key));
+                        list.add(assemblyDiff(oldJsonObject, newJsonObjectList, key, path));
                     } else if (!compareJsonObject(oldJsonObject, newJsonObjectList.get(0))) {
                         // 比较 compareJsonObject：true -> 匹配成功  false -> 匹配失败
-                        System.out.printf("旧报文 \n%s\n新报文\n%s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
-                                displayJsonAsXml(newJsonObjectList.get(0), key), (path + "." + key));
-                        System.out.println("-----------------------------------------------------");
+//                        System.out.printf("旧报文 \n%s\n新报文\n%s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
+//                                displayJsonAsXml(newJsonObjectList.get(0), key), (path + "." + key));
+                        list.add(assemblyDiff(oldJsonObject, newJsonObjectList.get(0), key, path));
                     }
                 }
             } else {
@@ -119,8 +120,8 @@ public class MessageCompareUtils {
         List<Map.Entry<String, Object>> sortResult = set.stream().sorted((o1, o2) -> {
             String k1 = o1.getKey();
             String k2 = o2.getKey();
-            return StringUtils.compare(MapUtils.getString(attrMap, k1, "0"),
-                    MapUtils.getString(attrMap, k2, "0"));
+            return StringUtils.compare(MapUtils.getString(attrMap, k2, "0"),
+                    MapUtils.getString(attrMap, k1, "0"));
         }).collect(Collectors.toList());
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -144,6 +145,41 @@ public class MessageCompareUtils {
         for (JSONObject jsonObject : objectList) {
             stringBuilder.append(displayJsonAsXml(jsonObject, parentTag)).append("\n");
         }
+        return stringBuilder.toString();
+    }
+
+    private static String assemblyDiff(JSONObject fk, JSONObject bp, String key, String path){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("报文存在差异：\n").append("服开报文\n").append(displayJsonAsXml(fk, key))
+                .append("\n").append("编排报文\n").append(displayJsonAsXml(bp, key))
+                .append("\n").append("节点路径 [").append(path).append(".").append(key).append("]")
+                .append("\n================================\n");
+        return stringBuilder.toString();
+    }
+
+    private static String assemblyDiff(JSONObject fk, List<JSONObject> objectList, String key, String path){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("编排报文节点重复：\n").append(displayJsonAsXml(fk, key))
+                .append("\n").append("编排报文\n").append(displayJsonAsXml(objectList, key))
+                .append("\n").append("节点路径 [").append(path).append(".").append(key).append("]")
+                .append("\n================================\n");
+        return stringBuilder.toString();
+    }
+
+    private static String assemblyDiff(JSONObject fk, String key, String path){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("编排报文缺失节点：\n").append("服开报文：\n").append(displayJsonAsXml(fk, key))
+                .append("\n").append("节点路径 [").append(path).append(".").append(key).append("]")
+                .append("\n================================\n");
+        return stringBuilder.toString();
+    }
+
+    private static String assemblyDiff(String fk, String bp, String key, String path){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("报文存在差异：\n").append("服开报文").append(displayJsonAsXml(fk, key))
+                .append("\n\n").append("编排报文").append(displayJsonAsXml(bp, key))
+                .append("\n\n").append("节点路径 [").append(path).append(".").append(key).append("]")
+                .append("\n================================\n");
         return stringBuilder.toString();
     }
 

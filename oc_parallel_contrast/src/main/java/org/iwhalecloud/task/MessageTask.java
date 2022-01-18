@@ -9,10 +9,7 @@ import org.dom4j.Element;
 import org.iwhalecloud.config.InterfaceConfig;
 import org.iwhalecloud.constant.InterfaceNameContent;
 import org.iwhalecloud.dao.impl.MessageDaoImpl;
-import org.iwhalecloud.utils.FileUtils;
-import org.iwhalecloud.utils.HttpUtils;
-import org.iwhalecloud.utils.JSONUtils;
-import org.iwhalecloud.utils.MessageCompareUtils;
+import org.iwhalecloud.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +25,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +42,8 @@ public class MessageTask {
 
     // 根据编排的环节id转成成服开对应的环节id。存在一对多映射关系，返回多个去查询只会匹配到一个报文
     private static final String GET_FK_TACHE_ID_SQL = "SELECT fk_tache_id,port_type FROM gw_tache_map WHERE bp_tache_id = ?;";
+
+    private static final String MSG_DIFF_SQL = "INSERT INTO GW_MSG_DIFF (order_id,work_order_id,fk_xml,bp_xml,diff,create_date) VALUES(?,?,?,?,?,now())";
 
     @Autowired
     @Qualifier("bpJdbcTemplate")
@@ -66,7 +66,8 @@ public class MessageTask {
             return;
         }
         // 判断当前单是回单还是退单，退单直接回单，不进行报文比较；回单逻辑继续
-        for (Map<String, Object> ocApiInstMap : ocApiInstList) {
+        for (Map<String, Object> ocApiInstMap : ocApiInstList) {\
+            // todo 判断 order_id work_order_id
             execute(ocApiInstMap);
         }
         logger.info(" =========== 定时任务结束 =========== ");
@@ -111,13 +112,14 @@ public class MessageTask {
         // 服开报文进行 root.baseInfo.workOrderId 转换，转为编排这边的 workOrderId
         // 替换的是服开派单报文
         fkBackOrderMessage = replaceMessage(fkSendOrderMessage, bpWorkOrderId);
-        // todo 获取的 服开派单没有 Soap 协议头
+        // todo 获取的 服开派单没有协议头
         fkBackOrderMessage = addSoap(fkBackOrderMessage, bpMessage);
 
          // 根据服开请求头并获取请求路径
          String receiptUrl = MapUtils.getString(sourceMap, "url");
          // 发起回单
          String result = HttpUtils.callWebService(fkBackOrderMessage, receiptUrl);
+         result = ParseUtil.xmlRoughParse(result, "root");
          logger.info(" ===== 回单结果： [{}] ==== ", result);
 
         // 报文比较
@@ -130,7 +132,12 @@ public class MessageTask {
         JSONObject fk = new JSONObject();
         JSONUtils.dom4j2Json(DocumentHelper.parseText(fkSendOrderMessage).getRootElement(), fk);
 
-        MessageCompareUtils.compare(fk, bp, "root");
+        List<String> diffResultList = new ArrayList<>();
+        MessageCompareUtils.compare(fk, bp, "root", diffResultList);
+        String msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
+        String orderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("orderId");
+        String workOrderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("workOrderId");
+        bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkSendOrderMessage, bpMessage, msgDiff);
     }
 
     /**

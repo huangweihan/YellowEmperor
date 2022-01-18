@@ -1,9 +1,98 @@
 package org.iwhalecloud.utils;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.dom4j.*;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ParseUtil {
 
+	/**
+	 * xml转json
+	 * Add By ChenW 2021-10-22
+	 *
+	 * @param xmlStr xml格式报文
+	 * @return
+	 * @throws DocumentException
+	 */
+	public static JSONObject parseXmlToJson(String xmlStr) throws DocumentException {
+		Document doc = DocumentHelper.parseText(xmlStr);
+		JSONObject json = new JSONObject();
+		dom4j2Json(doc.getRootElement(), json);
+		return json;
+	}
+
+	/**
+	 * xml转json （具体的报文解析--无数据的节点将不会被展示）
+	 */
+	public static void dom4j2Json(Element element, JSONObject json) {
+		//如果是属性
+		for (Object o : element.attributes()) {
+			Attribute attr = (Attribute) o;
+			if (!StringUtils.isEmpty(attr.getValue())) {
+				json.put("@" + attr.getName(), attr.getValue());
+			}
+		}
+		List<Element> chdEl = element.elements();
+		//如果没有子元素,只有一个值
+		if (chdEl.isEmpty() && !StringUtils.isEmpty(element.getText())) {
+			json.put(element.getName(), element.getText());
+		}
+		//有子元素
+		for (Element e : chdEl) {
+			//子元素也有子元素
+			if (!e.elements().isEmpty()) {
+				JSONObject childJson = new JSONObject();
+				//反复迭代，寻找子元素
+				dom4j2Json(e, childJson);
+				Object o = json.get(e.getName());
+				if (o != null) {
+					JSONArray jsonTemp = null;
+					//如果此元素已存在,则转为jsonArray
+					if (o instanceof JSONObject) {
+						JSONObject jsono = (JSONObject) o;
+						json.remove(e.getName());
+						jsonTemp = new JSONArray();
+						jsonTemp.add(jsono);
+						jsonTemp.add(childJson);
+					}
+					if (o instanceof JSONArray) {
+						jsonTemp = (JSONArray) o;
+						jsonTemp.add(childJson);
+					}
+					json.put(e.getName(), jsonTemp);
+				} else {
+					if (!childJson.isEmpty()) {
+						json.put(e.getName(), childJson);
+					}
+				}
+			} else {
+				//子元素没有子元素
+				for (Object o : element.attributes()) {
+					Attribute attr = (Attribute) o;
+					if (!StringUtils.isEmpty(attr.getValue())) {
+						json.put("@" + attr.getName(), attr.getValue());
+					}
+				}
+				if (!e.getText().isEmpty()) {
+					json.put(e.getName(), e.getText());
+				}
+			}
+		}
+	}
+
+	//
 	public static String xmlRoughParse(String content,String key)throws Exception{
 		String result = null;
 		content = StringEscapeUtils.unescapeHtml(content);
@@ -11,6 +100,7 @@ public class ParseUtil {
 		content = content.replaceAll("\\<!\\[CDATA\\[", "").replaceAll("\\]\\]\\>", "");
 		content = content.replaceAll("\\<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?\\>", "");
 		content = content.replaceAll("\\<\\?xml version=\"1.0\" encoding=\"GBK\"\\?\\>", "");
+
 
 		content = content.replaceAll("\\r\\n", "");
 		content = content.replaceAll("\\n", "");
@@ -21,7 +111,9 @@ public class ParseUtil {
 		content = content.replaceAll("\\>\\s+", ">");
 		content = content.replaceAll("\\s+\\<", "<");
 		content = content.replaceAll("\\s+", " ");
-
+		
+		
+		
 		if(key==null || "".equals(key)){
 			return content;
 		}
@@ -32,25 +124,5 @@ public class ParseUtil {
 		}
 		result = content.substring(startIndex+key.length()+2, endIndex);
 		return result;
-	}
-
-	public static String xmlReplaceKey(String content,String orgKey,String tarKey) throws Exception{
-		content = content.replaceAll("\\<"+orgKey+"\\>", "<"+tarKey+">");
-		content = content.replaceAll("\\</"+orgKey+"\\>", "</"+tarKey+">");
-		return content;
-	}
-
-	public static String xmlReplaceE(String content) throws Exception{
-		content = content.replaceAll("\\<e\\>", "");
-		content = content.replaceAll("\\</e\\>", "");
-		return content;
-	}
-
-	public static String xmlRoughParseEx(String content, String key) throws Exception {
-		StringBuffer result = new StringBuffer("<" + key + ">");
-		String xmlPough = xmlRoughParse(content, key);
-		result = result.append(xmlPough + "</" + key + ">");
-		String afterParse = new String(result);
-		return afterParse;
 	}
 }
