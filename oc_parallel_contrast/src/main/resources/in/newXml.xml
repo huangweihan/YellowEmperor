@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <root>
     <expInfo>
         <orderItem>
             <itemSpecId>3000</itemSpecId>
             <desc>局向ID</desc>
             <seq>1</seq>
-            <newItemVal>101125282</newItemVal>
+            <newItemVal>000101125282</newItemVal>
             <oldItemVal/>
         </orderItem>
         <orderItem>
@@ -22,11 +21,17 @@
             <newItemVal>999</newItemVal>
             <oldItemVal/>
         </orderItem>
+        <orderItem>
+            <itemSpecId>300084</itemSpecId>
+            <desc>同址电话标识</desc>
+            <seq>1</seq>
+            <newItemVal>999</newItemVal>
+            <oldItemVal/>
+        </orderItem>
     </expInfo>
     <baseInfo>
         <orderId>8712109271535023734</orderId>
         <workOrderId>5786735</workOrderId>
-        <productId>6600117000</productId>
+        <productId>66001170002</productId>
     </baseInfo>
 </root>
-

@@ -20,6 +20,10 @@ public class InterfaceConfig {
     @Value("${integratedschedulwebservice.url}")
     private String IntegratedSchedulWebServiceUrl;
 
+    // 小文件查询接口
+    @Value("${queryfileinfobyapiinstid.url}")
+    private String queryFileInfoByApiInstIdUrl;
+
     public String getResToBeInstalledServiceUrl() {
         return resToBeInstalledServiceUrl;
     }
@@ -30,5 +34,9 @@ public class InterfaceConfig {
 
     public String getIntegratedSchedulWebServiceUrl() {
         return IntegratedSchedulWebServiceUrl;
+    }
+
+    public String getQueryFileInfoByApiInstIdUrl(){
+        return queryFileInfoByApiInstIdUrl;
     }
 }

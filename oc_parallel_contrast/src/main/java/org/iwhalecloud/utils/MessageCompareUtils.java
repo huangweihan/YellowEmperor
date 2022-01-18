@@ -2,22 +2,28 @@ package org.iwhalecloud.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.io.IOUtils;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import java.io.File;
-import java.io.FileReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MessageCompareUtils {
 
     private MessageCompareUtils(){}
+
+    private static final Map<String, String> attrMap;
+
+    static {
+        attrMap = new HashMap<>();
+        attrMap.put("itemSpecId", "5");
+        attrMap.put("desc", "4");
+        attrMap.put("seq", "3");
+        attrMap.put("newItemVal", "2");
+        attrMap.put("oldItemVal", "1");
+    }
 
     public static void compare(JSONObject oldObj, JSONObject newObj, String path) {
         Set<Map.Entry<String, Object>> oldEntrySet = oldObj.entrySet();
@@ -30,7 +36,8 @@ public class MessageCompareUtils {
                 String oldValue = (String) value;
                 String newValue = newObj.getString(key);
                 if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
-                    System.out.printf("旧报文 [%s]\n新报文 [%s]\n节点路径 [%s]\n", oldValue, newValue, (path + "." + key));
+                    System.out.printf("旧报文\n%s\n新报文\n%s\n节点路径 [%s]\n", displayJsonAsXml(oldValue, key),
+                            displayJsonAsXml(newValue, key), (path + "." + key));
                     System.out.println("-----------------------------------------------------");
                 }
             } else if (value instanceof JSONObject) {
@@ -45,17 +52,17 @@ public class MessageCompareUtils {
                     List<JSONObject> newJsonObjectList = getJsonObject(newJsonArray, oldJsonObject);
                     if (newJsonObjectList.isEmpty()) {
                         // 说明旧报文中的 JsonObject 在新报文中找不到
-                        System.out.printf("新报文中缺失节点：\n %s 节点路径：%s\n", simpleDisplayJsonAsXml(oldJsonObject, key), (path + "." + key));
+                        System.out.printf("新报文中缺失节点：\n %s 节点路径：%s\n", displayJsonAsXml(oldJsonObject, key), (path + "." + key));
                         System.out.println("-----------------------------------------------------");
                     } else if (newJsonObjectList.size() > 1) {
                         // 说明新报文中出现了重复的节点
-                        System.out.printf("新报文节点重复：旧报文\n %s\n新报文\n %s\n节点路径 %s\n", simpleDisplayJsonAsXml(oldJsonObject, key),
-                                simpleDisplayJsonAsXml(newJsonObjectList, key), (path + "." + key));
+                        System.out.printf("新报文节点重复：旧报文\n %s\n新报文\n %s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
+                                displayJsonAsXml(newJsonObjectList, key), (path + "." + key));
                         System.out.println("-----------------------------------------------------");
                     } else if (!compareJsonObject(oldJsonObject, newJsonObjectList.get(0))) {
                         // 比较 compareJsonObject：true -> 匹配成功  false -> 匹配失败
-                        System.out.printf("旧报文 \n%s\n新报文\n%s\n节点路径 %s\n", simpleDisplayJsonAsXml(oldJsonObject, key),
-                                simpleDisplayJsonAsXml(newJsonObjectList.get(0), key), (path + "." + key));
+                        System.out.printf("旧报文 \n%s\n新报文\n%s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
+                                displayJsonAsXml(newJsonObjectList.get(0), key), (path + "." + key));
                         System.out.println("-----------------------------------------------------");
                     }
                 }
@@ -71,6 +78,7 @@ public class MessageCompareUtils {
 
         for (Map.Entry<String, Object> entry : oldEntrySet) {
             String key = entry.getKey();
+            if ("seq".equals(key)) {continue;}
             Object oldValue = entry.getValue();
             if (!ObjectUtils.nullSafeEquals(oldValue, newObj.getString(key))) {
                 return false;
@@ -82,61 +90,61 @@ public class MessageCompareUtils {
     private static List<JSONObject> getJsonObject(JSONArray jsonArray, JSONObject jsonObject) {
         List<JSONObject> jsonObjects = new ArrayList<>();
         for (Object obj : jsonArray) {
-            if (findJsonObjectByItemSpecId((JSONObject) obj, jsonObject)) {
+            if (findBpJsonObject((JSONObject) obj, jsonObject)) {
                 jsonObjects.add((JSONObject) obj);
             }
-        }
+         }
         return jsonObjects;
     }
 
     // 前提 itemSpecId 在新和旧报文中保持一致
-    private static boolean findJsonObjectByItemSpecId(JSONObject newJsonObject, JSONObject oldJsonObject) {
+    private static boolean findBpJsonObject(JSONObject newJsonObject, JSONObject oldJsonObject) {
         String newItemSpecId = newJsonObject.getString("itemSpecId");
         String oldItemSpecId = oldJsonObject.getString("itemSpecId");
-        return ObjectUtils.nullSafeEquals(newItemSpecId, oldItemSpecId);
+        return ObjectUtils.nullSafeEquals(newItemSpecId, oldItemSpecId) ;
     }
 
-    private static String simpleDisplayJsonAsXml(JSONObject jsonObject, String parentTag) {
+    private static String displayJsonAsXml(Object value, String tag){
+        Assert.notNull(value, "待转化的 value 不能为空");
+        Assert.notNull(tag, "tag 不能为空");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<").append(tag).append(">").append(value).append("</").append(tag).append(">");
+        return stringBuilder.toString();
+    }
+
+    private static String displayJsonAsXml(JSONObject jsonObject, String parentTag) {
         Assert.notNull(jsonObject, "待转化的JSONObject不能为空");
         Assert.notNull(parentTag, "parentTag不能为空");
+        Set<Map.Entry<String, Object>> set = jsonObject.entrySet();
+        List<Map.Entry<String, Object>> sortResult = set.stream().sorted((o1, o2) -> {
+            String k1 = o1.getKey();
+            String k2 = o2.getKey();
+            return StringUtils.compare(MapUtils.getString(attrMap, k1, "0"),
+                    MapUtils.getString(attrMap, k2, "0"));
+        }).collect(Collectors.toList());
+
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<").append(parentTag).append(">\n");
-        for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
+
+        for (Map.Entry<String, Object> entry : sortResult) {
             String key = entry.getKey();
             Object value = entry.getValue();
             stringBuilder.append("\t").append("<").append(key).append(">")
                     .append(value)
                     .append("<").append(key).append("/>\n");
         }
-        stringBuilder.append("</orderItem>\n");
         stringBuilder.append("</").append(parentTag).append("/>\n");
         return stringBuilder.toString();
     }
 
-    private static String simpleDisplayJsonAsXml(List<JSONObject> objectList, String parentTag) {
+    private static String displayJsonAsXml(List<JSONObject> objectList, String parentTag) {
         Assert.notNull(objectList, "待转化的objectList不能为空");
         Assert.notNull(parentTag, "parentTag不能为空");
         StringBuilder stringBuilder = new StringBuilder();
         for (JSONObject jsonObject : objectList) {
-            stringBuilder.append(jsonObject).append("\n");
+            stringBuilder.append(displayJsonAsXml(jsonObject, parentTag)).append("\n");
         }
         return stringBuilder.toString();
     }
 
-    public static void main(String[] args) {
-        try {
-            URL url = Thread.currentThread().getContextClassLoader().getResource("");
-            String path = url.getPath();
-            String newXml = IOUtils.toString(new FileReader(new File(path + "/in/newXml.xml")));
-            String oldXml = IOUtils.toString(new FileReader(new File(path + "/in/oldXml.xml")));
-            JSONObject newJsonObject = JSONUtils.xml2Json(newXml);
-            JSONObject oldJsonObject = JSONUtils.xml2Json(oldXml);
-            String orderId = oldJsonObject.getJSONObject("baseInfo").getString("orderId");
-            String workOrderId = oldJsonObject.getJSONObject("baseInfo").getString("workOrderId");
-            System.out.printf("============ orderId = [%s], workOrderId = [%s] ============\n", orderId, workOrderId);
-            compare(oldJsonObject, newJsonObject, "root");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

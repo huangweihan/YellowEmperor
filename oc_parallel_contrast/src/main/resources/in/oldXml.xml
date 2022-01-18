@@ -1,12 +1,3 @@
-<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:com="http://common.ws.yn.oss.ztesoft.com">
-    <soapenv:Header/>
-    <soapenv:Body>
-        <com:rscService soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-            <infType xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">IOMFORWFM</infType>
-            <head xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"></head>
-            <body xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">
-                <![CDATA[
-            <?xml version="1.0" encoding="UTF-8"?>
 <root>
     <expInfo>
         <orderItem>
@@ -34,11 +25,6 @@
     <baseInfo>
         <orderId>8712109271535023734</orderId>
         <workOrderId>5786735</workOrderId>
-        <productId>6600117000</productId>
+        <productId>66001170001</productId>
     </baseInfo>
 </root>
-          ]]>
-            </body>
-        </com:rscService>
-    </soapenv:Body>
-</soapenv:Envelope>
