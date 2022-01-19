@@ -122,7 +122,16 @@ public class MessageTask {
 
         Assert.notNull(bpMessage, "编排对比报文不能为空");
         Assert.notNull(fkSendOrderMessage, "服开对比报文不能为空");
+
+        dealWithDiff(bpMessage, fkSendOrderMessage, type);
+    }
+
+    private void dealWithDiff(String bpMessage, String fkMessage, String type) throws DocumentException {
         // 判断当前是综调请求还是资源请求
+        String workOrderId = null;
+        String orderId = null;
+        String msgDiff = null;
+
         if ("res".equals(type)) {
             // 报文比较
             Element rootElement = DocumentHelper.parseText(bpMessage).getRootElement();
@@ -131,25 +140,23 @@ public class MessageTask {
             JSONUtils.dom4j2Json(DocumentHelper.parseText(subElement.getTextTrim()).getRootElement(), bp);
 
             JSONObject fk = new JSONObject();
-            JSONUtils.dom4j2Json(DocumentHelper.parseText(fkSendOrderMessage).getRootElement(), fk);
+            JSONUtils.dom4j2Json(DocumentHelper.parseText(fkMessage).getRootElement(), fk);
             // 资源
             List<String> diffResultList = new ArrayList<>();
             MessageCompareUtils.compareForRes(fk, bp, "root", diffResultList);
-            String msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
-            String orderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("orderId");
-            String workOrderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("workOrderId");
-            bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkSendOrderMessage, bpMessage, msgDiff);
+            msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
+            orderId = DocumentHelper.parseText(fkMessage).getRootElement().element("baseInfo").elementText("orderId");
+            workOrderId = DocumentHelper.parseText(fkMessage).getRootElement().element("baseInfo").elementText("workOrderId");
         } else if ("zd".equals(type)) {
             // 资源
             List<String> diffResultList = new ArrayList<>();
             Element rootElement = DocumentHelper.parseText(bpMessage).getRootElement();
             Element bpElement = rootElement.element("Body").elements().get(0).element("body");
-            Element fkElement = DocumentHelper.parseText(fkSendOrderMessage).getRootElement();
+            Element fkElement = DocumentHelper.parseText(fkMessage).getRootElement();
             MessageCompareUtils.compareForZd(fkElement, bpElement , diffResultList);
-            String msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
+            msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
             List<Element> elements = rootElement.element("OM_SERVICE_ORDER").elements("OM_SO_ATTR");
-            String workOrderId = null;
-            String orderId = null;
+
             for (Element element : elements) {
                 if ("WORK_ORDER_ID".equals(element.attribute("ATTR_CODE").getValue())) {
                     workOrderId = element.attribute("ATTR_VALUE").getValue();
@@ -158,8 +165,15 @@ public class MessageTask {
                     orderId = element.attribute("ATTR_VALUE").getValue();
                 }
             }
-            bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkSendOrderMessage, bpMessage, msgDiff);
         }
+        if (!StringUtils.hasText(msgDiff)) {
+            logger.info("==== 报文比较结果一致 ====");
+            return;
+        }
+        logger.info("==== 报文比较存在差异 =====");
+        Assert.notNull(workOrderId, "workOrderId 在报文中没有查询到！");
+        Assert.notNull(orderId, "orderId 在报文中没有查询到！");
+        bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkMessage, bpMessage, msgDiff);
     }
 
     /**

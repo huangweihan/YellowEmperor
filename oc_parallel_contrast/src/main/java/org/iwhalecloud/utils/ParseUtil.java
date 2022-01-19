@@ -7,26 +7,12 @@ import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.*;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ParseUtil {
 
 	/**
 	 * xml转json
-	 * Add By ChenW 2021-10-22
-	 *
-	 * @param xmlStr xml格式报文
-	 * @return
-	 * @throws DocumentException
 	 */
 	public static JSONObject parseXmlToJson(String xmlStr) throws DocumentException {
 		Document doc = DocumentHelper.parseText(xmlStr);
@@ -94,7 +80,6 @@ public class ParseUtil {
 		}
 	}
 
-	//
 	public static String xmlRoughParse(String content,String key)throws Exception{
 		String result = null;
 		content = StringEscapeUtils.unescapeHtml(content);
@@ -102,7 +87,6 @@ public class ParseUtil {
 		content = content.replaceAll("\\<!\\[CDATA\\[", "").replaceAll("\\]\\]\\>", "");
 		content = content.replaceAll("\\<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?\\>", "");
 		content = content.replaceAll("\\<\\?xml version=\"1.0\" encoding=\"GBK\"\\?\\>", "");
-
 
 		content = content.replaceAll("\\r\\n", "");
 		content = content.replaceAll("\\n", "");
@@ -113,9 +97,7 @@ public class ParseUtil {
 		content = content.replaceAll("\\>\\s+", ">");
 		content = content.replaceAll("\\s+\\<", "<");
 		content = content.replaceAll("\\s+", " ");
-		
-		
-		
+
 		if(key==null || "".equals(key)){
 			return content;
 		}
@@ -127,10 +109,4 @@ public class ParseUtil {
 		result = content.substring(startIndex+key.length()+2, endIndex);
 		return result;
 	}
-
-	public static String json2xml(String jsonString) {
-		XMLSerializer xmlSerializer = new XMLSerializer();
-		return xmlSerializer.write(JSONSerializer.toJSON(jsonString));
-	}
-
 }
