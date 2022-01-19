@@ -2,6 +2,8 @@ package org.iwhalecloud.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.*;
@@ -125,4 +127,10 @@ public class ParseUtil {
 		result = content.substring(startIndex+key.length()+2, endIndex);
 		return result;
 	}
+
+	public static String json2xml(String jsonString) {
+		XMLSerializer xmlSerializer = new XMLSerializer();
+		return xmlSerializer.write(JSONSerializer.toJSON(jsonString));
+	}
+
 }

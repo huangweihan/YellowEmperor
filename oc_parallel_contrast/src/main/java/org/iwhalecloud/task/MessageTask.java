@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -115,34 +114,51 @@ public class MessageTask {
         // todo 获取的 服开派单没有协议头
         fkBackOrderMessage = addSoap(fkBackOrderMessage, bpMessage);
 
-         // 根据服开请求头并获取请求路径
          String receiptUrl = MapUtils.getString(sourceMap, "url");
          // 发起回单
          String result = HttpUtils.callWebService(fkBackOrderMessage, receiptUrl);
          result = ParseUtil.xmlRoughParse(result, "root");
          logger.info(" ===== 回单结果： [{}] ==== ", result);
 
-        // 报文比较
         Assert.notNull(bpMessage, "编排对比报文不能为空");
-        Element rootElement = DocumentHelper.parseText(bpMessage).getRootElement();
-        Element subElement = rootElement.element("Body").elements().get(0).element("body");
-        JSONObject bp = new JSONObject();
-        JSONUtils.dom4j2Json(DocumentHelper.parseText(subElement.getTextTrim()).getRootElement(), bp);
-
-        JSONObject fk = new JSONObject();
-        JSONUtils.dom4j2Json(DocumentHelper.parseText(fkSendOrderMessage).getRootElement(), fk);
-
-        // todo 判断当前是综调请求还是资源请求
+        Assert.notNull(fkSendOrderMessage, "服开对比报文不能为空");
+        // 判断当前是综调请求还是资源请求
         if ("res".equals(type)) {
+            // 报文比较
+            Element rootElement = DocumentHelper.parseText(bpMessage).getRootElement();
+            Element subElement = rootElement.element("Body").elements().get(0).element("body");
+            JSONObject bp = new JSONObject();
+            JSONUtils.dom4j2Json(DocumentHelper.parseText(subElement.getTextTrim()).getRootElement(), bp);
+
+            JSONObject fk = new JSONObject();
+            JSONUtils.dom4j2Json(DocumentHelper.parseText(fkSendOrderMessage).getRootElement(), fk);
             // 资源
             List<String> diffResultList = new ArrayList<>();
-            MessageCompareUtils.compare(fk, bp, "root", diffResultList);
+            MessageCompareUtils.compareForRes(fk, bp, "root", diffResultList);
             String msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
             String orderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("orderId");
             String workOrderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("workOrderId");
             bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkSendOrderMessage, bpMessage, msgDiff);
         } else if ("zd".equals(type)) {
-
+            // 资源
+            List<String> diffResultList = new ArrayList<>();
+            Element rootElement = DocumentHelper.parseText(bpMessage).getRootElement();
+            Element bpElement = rootElement.element("Body").elements().get(0).element("body");
+            Element fkElement = DocumentHelper.parseText(fkSendOrderMessage).getRootElement();
+            MessageCompareUtils.compareForZd(fkElement, bpElement , diffResultList);
+            String msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
+            List<Element> elements = rootElement.element("OM_SERVICE_ORDER").elements("OM_SO_ATTR");
+            String workOrderId = null;
+            String orderId = null;
+            for (Element element : elements) {
+                if ("WORK_ORDER_ID".equals(element.attribute("ATTR_CODE").getValue())) {
+                    workOrderId = element.attribute("ATTR_VALUE").getValue();
+                }
+                if ("ORDER_ID".equals(element.attribute("ATTR_CODE").getValue())) {
+                    orderId = element.attribute("ATTR_VALUE").getValue();
+                }
+            }
+            bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkSendOrderMessage, bpMessage, msgDiff);
         }
     }
 

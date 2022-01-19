@@ -9,43 +9,39 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageCompareUtils {
 
-    private MessageCompareUtils(){}
+    private MessageCompareUtils() {
+    }
 
-    private static final Map<String, String> attrMap;
+    private static final Map<String, String> ATTR_MAP;
 
     static {
-        attrMap = new HashMap<>();
-        attrMap.put("itemSpecId", "5");
-        attrMap.put("desc", "4");
-        attrMap.put("seq", "3");
-        attrMap.put("newItemVal", "2");
-        attrMap.put("oldItemVal", "1");
+        ATTR_MAP = new HashMap<>();
+        ATTR_MAP.put("itemSpecId", "5");
+        ATTR_MAP.put("desc", "4");
+        ATTR_MAP.put("seq", "3");
+        ATTR_MAP.put("newItemVal", "2");
+        ATTR_MAP.put("oldItemVal", "1");
     }
 
     /**
      * 综调 - 报文比较
      * 报文比较结构(节点)一致，顺序一致
      */
-    public static void compare(Element oldNode, Element newNode, List<String> list) {
+    public static void compareForZd(Element oldNode, Element newNode, List<String> list) {
         // 当前节点的名称、文本内容和属性
-        String curOldNodeName = oldNode.getName();
         String curOldNodeValue = oldNode.getTextTrim();
         String curNewNodeValue = newNode.getTextTrim();
 
         // 判断标签值
         if (!curOldNodeValue.equals(curNewNodeValue)) {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("报文存在差异(标签)：\n").append("服开报文\n").append("<").append(curOldNodeName).append(">").append(curOldNodeValue).append("</").append(curOldNodeName).append(">")
-                    .append("\n").append("编排报文\n").append("<").append(curOldNodeName).append(">").append(curNewNodeValue).append("</").append(curOldNodeName).append(">")
-                    .append("\n").append("节点路径 [").append(oldNode.getPath()).append("]")
-                    .append("\n================================\n");
-            list.add(stringBuilder.toString());
+            list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "标签"));
         }
 
         // 判断属性值
@@ -53,17 +49,11 @@ public class MessageCompareUtils {
         for (Attribute oldAttribute : oldAttributes) {
             String name = oldAttribute.getName();
             String oldValue = oldAttribute.getValue().trim();
-            Attribute attribute = newNode.attribute(name);
-            String newValue = attribute.getValue().trim();
+            Attribute newAttribute = newNode.attribute(name);
+            String newValue = newAttribute.getValue().trim();
             if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
-                StringBuilder stringBuilder = new StringBuilder();
-                List<String> oldCollect = oldAttributes.stream().map(Node::asXML).collect(Collectors.toList());
-                List<String> newCollect = oldAttributes.stream().map(Node::asXML).collect(Collectors.toList());
-                stringBuilder.append("报文存在差异(属性)：\n").append("服开报文\n").append("<").append(curOldNodeName).append(StringUtils.join(oldCollect, " ")).append("/>")
-                        .append("\n").append("编排报文\n").append("<").append(curOldNodeName).append( StringUtils.join(newCollect, " ")).append("/>")
-                        .append("\n").append("节点路径 [").append(oldNode.getPath()).append("]")
-                        .append("\n================================\n");
-                list.add(stringBuilder.toString());
+                list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "属性"));
+                // 一个标签内的属性比较出现问题，直接把整个标签打印出来，并且接下来的属性就不用做比较了。
                 break;
             }
         }
@@ -75,7 +65,7 @@ public class MessageCompareUtils {
         for (int i = 0; i < oldElements.size(); i++) {
             Element oldEle = oldElements.get(i);
             Element newEle = newElements.get(i);
-            compare(oldEle, newEle, list);
+            compareForZd(oldEle, newEle, list);
         }
     }
 
@@ -83,7 +73,7 @@ public class MessageCompareUtils {
      * 资源 - 报文比较
      * 报文比较结构(节点)不一致，顺序不一致
      */
-    public static void compare(JSONObject oldObj, JSONObject newObj, String path, List<String> list) {
+    public static void compareForRes(JSONObject oldObj, JSONObject newObj, String path, List<String> list) {
         Set<Map.Entry<String, Object>> oldEntrySet = oldObj.entrySet();
         for (Map.Entry<String, Object> entry : oldEntrySet) {
             String key = entry.getKey();
@@ -93,14 +83,12 @@ public class MessageCompareUtils {
                 String oldValue = (String) value;
                 String newValue = newObj.getString(key);
                 if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
-//                    System.out.printf("旧报文\n%s\n新报文\n%s\n节点路径 [%s]\n", displayJsonAsXml(oldValue, key),
-//                            displayJsonAsXml(newValue, key), (path + "." + key));
-                    list.add(assemblyDiff(oldValue, newValue, key, path));
+                    list.add(assemblyDiffForResMadeInChina(oldValue, newValue, key, path));
                 }
             } else if (value instanceof JSONObject) {
                 JSONObject oldJsonObject = (JSONObject) value;
                 JSONObject newJsonObject = newObj.getJSONObject(key);
-                compare(oldJsonObject, newJsonObject, path + "." + key, list);
+                compareForRes(oldJsonObject, newJsonObject, path + "." + key, list);
             } else if (value instanceof JSONArray) {
                 JSONArray oldJsonArray = (JSONArray) value;
                 for (Object old : oldJsonArray) {
@@ -109,18 +97,13 @@ public class MessageCompareUtils {
                     List<JSONObject> newJsonObjectList = getJsonObject(newJsonArray, oldJsonObject);
                     if (newJsonObjectList.isEmpty()) {
                         // 说明旧报文中的 JsonObject 在新报文中找不到
-                        // System.out.printf("新报文中缺失节点：\n %s 节点路径：%s\n", displayJsonAsXml(oldJsonObject, key), (path + "." + key));
-                        list.add(assemblyDiff(oldJsonObject, key, path));
+                        list.add(assemblyDiffForResMadeInChina(oldJsonObject, null, key, path));
                     } else if (newJsonObjectList.size() > 1) {
                         // 说明新报文中出现了重复的节点
-//                        System.out.printf("新报文节点重复：旧报文\n %s\n新报文\n %s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
-//                                displayJsonAsXml(newJsonObjectList, key), (path + "." + key));
-                        list.add(assemblyDiff(oldJsonObject, newJsonObjectList, key, path));
+                        list.add(assemblyDiffForResMadeInChina(oldJsonObject, newJsonObjectList, key, path));
                     } else if (!compareJsonObject(oldJsonObject, newJsonObjectList.get(0))) {
                         // 比较 compareJsonObject：true -> 匹配成功  false -> 匹配失败
-//                        System.out.printf("旧报文 \n%s\n新报文\n%s\n节点路径 %s\n", displayJsonAsXml(oldJsonObject, key),
-//                                displayJsonAsXml(newJsonObjectList.get(0), key), (path + "." + key));
-                        list.add(assemblyDiff(oldJsonObject, newJsonObjectList.get(0), key, path));
+                        list.add(assemblyDiffForResMadeInChina(oldJsonObject, newJsonObjectList.get(0), key, path));
                     }
                 }
             } else {
@@ -135,7 +118,9 @@ public class MessageCompareUtils {
 
         for (Map.Entry<String, Object> entry : oldEntrySet) {
             String key = entry.getKey();
-            if ("seq".equals(key)) {continue;}
+            if ("seq".equals(key)) {
+                continue;
+            }
             Object oldValue = entry.getValue();
             if (!ObjectUtils.nullSafeEquals(oldValue, newObj.getString(key))) {
                 return false;
@@ -150,7 +135,7 @@ public class MessageCompareUtils {
             if (findBpJsonObject((JSONObject) obj, jsonObject)) {
                 jsonObjects.add((JSONObject) obj);
             }
-         }
+        }
         return jsonObjects;
     }
 
@@ -158,14 +143,74 @@ public class MessageCompareUtils {
     private static boolean findBpJsonObject(JSONObject newJsonObject, JSONObject oldJsonObject) {
         String newItemSpecId = newJsonObject.getString("itemSpecId");
         String oldItemSpecId = oldJsonObject.getString("itemSpecId");
-        return ObjectUtils.nullSafeEquals(newItemSpecId, oldItemSpecId) ;
+        return ObjectUtils.nullSafeEquals(newItemSpecId, oldItemSpecId);
     }
 
-    private static String displayJsonAsXml(Object value, String tag){
-        Assert.notNull(value, "待转化的 value 不能为空");
-        Assert.notNull(tag, "tag 不能为空");
+    public static String assemblyDiffForZdMadeInChina(Element fk, Element bp, String title) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<").append(tag).append(">").append(value).append("</").append(tag).append(">");
+        stringBuilder.append("报文存在差异-").append(title).append("\n");
+        stringBuilder.append("服开报文\n").append(madeInChina(fk)).append("\n")
+                .append("\n编排报文\n").append(madeInChina(bp)).append("\n");
+        String path = fk.getPath();
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        path = path.replaceAll("/", ".");
+        stringBuilder.append("\n节点路径：").append(path);
+        stringBuilder.append("\n==========================\n");
+        return stringBuilder.toString();
+    }
+
+    private static String madeInChina(Element element) {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<Attribute> attributes = element.attributes();
+        String key = element.getName();
+        String value = element.getTextTrim();
+        stringBuilder.append("<").append(key);
+        stringBuilder.append(StringUtils.join(attributes.stream().map(Node::asXML).collect(Collectors.toList()), ""));
+        if (StringUtils.isEmpty(value)) {
+            stringBuilder.append("/>");
+        } else {
+            stringBuilder.append(">").append(value).append("<").append(key).append("/>");
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String assemblyDiffForResMadeInChina(Object fkObj, Object bpObj, String key, String path) {
+        StringBuilder stringBuilder = new StringBuilder();
+        // 错误类型
+        // (1)节点比较差异 (2)节点重复 (3)节点丢失
+        stringBuilder.append("服开报文\n");
+        if (fkObj instanceof String) {
+            stringBuilder.append("<").append(key).append(">").append(fkObj).append("</").append(key).append(">").append("\n");
+        } else {
+            JSONObject fk = (JSONObject) fkObj;
+            stringBuilder.append(displayJsonAsXml(fk, "orderItem"));
+        }
+        String title = "- 报文节点差异";
+        if (bpObj == null) {
+            title = "- 报文节点缺失";
+        }
+        if (bpObj instanceof String) {
+            stringBuilder.append("\n编排报文\n");
+            stringBuilder.append("<").append(key).append(">").append(bpObj).append("</").append(key).append(">").append("\n");
+        }
+        if (bpObj instanceof List) {
+            title = "- 报文节点重复";
+            List<JSONObject> jsonObjectList = (List<JSONObject>) bpObj;
+            stringBuilder.append("\n编排报文\n");
+            for (JSONObject jsonObject : jsonObjectList) {
+                stringBuilder.append(displayJsonAsXml(jsonObject, "orderItem"));
+            }
+        }
+        if (bpObj instanceof JSONObject) {
+            stringBuilder.append("\n编排报文\n");
+            JSONObject jsonObject = (JSONObject) bpObj;
+            stringBuilder.append(displayJsonAsXml(jsonObject, "orderItem"));
+        }
+        stringBuilder.insert(0, title + "\n");
+        stringBuilder.append("\n节点路径：").append(path).append(".").append(key);
+        stringBuilder.append("\n==========================\n");
         return stringBuilder.toString();
     }
 
@@ -176,8 +221,8 @@ public class MessageCompareUtils {
         List<Map.Entry<String, Object>> sortResult = set.stream().sorted((o1, o2) -> {
             String k1 = o1.getKey();
             String k2 = o2.getKey();
-            return StringUtils.compare(MapUtils.getString(attrMap, k2, "0"),
-                    MapUtils.getString(attrMap, k1, "0"));
+            return StringUtils.compare(MapUtils.getString(ATTR_MAP, k2, "0"),
+                    MapUtils.getString(ATTR_MAP, k1, "0"));
         }).collect(Collectors.toList());
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -194,48 +239,4 @@ public class MessageCompareUtils {
         return stringBuilder.toString();
     }
 
-    private static String displayJsonAsXml(List<JSONObject> objectList, String parentTag) {
-        Assert.notNull(objectList, "待转化的objectList不能为空");
-        Assert.notNull(parentTag, "parentTag不能为空");
-        StringBuilder stringBuilder = new StringBuilder();
-        for (JSONObject jsonObject : objectList) {
-            stringBuilder.append(displayJsonAsXml(jsonObject, parentTag)).append("\n");
-        }
-        return stringBuilder.toString();
-    }
-
-    private static String assemblyDiff(JSONObject fk, JSONObject bp, String key, String path){
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("报文存在差异：\n").append("服开报文\n").append(displayJsonAsXml(fk, key))
-                .append("\n").append("编排报文\n").append(displayJsonAsXml(bp, key))
-                .append("\n").append("节点路径 [").append(path).append(".").append(key).append("]")
-                .append("\n================================\n");
-        return stringBuilder.toString();
-    }
-
-    private static String assemblyDiff(JSONObject fk, List<JSONObject> objectList, String key, String path){
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("编排报文节点重复：\n").append(displayJsonAsXml(fk, key))
-                .append("\n").append("编排报文\n").append(displayJsonAsXml(objectList, key))
-                .append("\n").append("节点路径 [").append(path).append(".").append(key).append("]")
-                .append("\n================================\n");
-        return stringBuilder.toString();
-    }
-
-    private static String assemblyDiff(JSONObject fk, String key, String path){
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("编排报文缺失节点：\n").append("服开报文：\n").append(displayJsonAsXml(fk, key))
-                .append("\n").append("节点路径 [").append(path).append(".").append(key).append("]")
-                .append("\n================================\n");
-        return stringBuilder.toString();
-    }
-
-    private static String assemblyDiff(String fk, String bp, String key, String path){
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("报文存在差异：\n").append("服开报文").append(displayJsonAsXml(fk, key))
-                .append("\n\n").append("编排报文").append(displayJsonAsXml(bp, key))
-                .append("\n\n").append("节点路径 [").append(path).append(".").append(key).append("]")
-                .append("\n================================\n");
-        return stringBuilder.toString();
-    }
 }
