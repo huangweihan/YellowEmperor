@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Attribute;
+import org.dom4j.Element;
+import org.dom4j.Node;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import java.util.*;
@@ -25,8 +28,61 @@ public class MessageCompareUtils {
         attrMap.put("oldItemVal", "1");
     }
 
-    // private static List<String> list = new ArrayList<>();
+    /**
+     * 综调 - 报文比较
+     * 报文比较结构(节点)一致，顺序一致
+     */
+    public static void compare(Element oldNode, Element newNode, List<String> list) {
+        // 当前节点的名称、文本内容和属性
+        String curOldNodeName = oldNode.getName();
+        String curOldNodeValue = oldNode.getTextTrim();
+        String curNewNodeValue = newNode.getTextTrim();
 
+        // 判断标签值
+        if (!curOldNodeValue.equals(curNewNodeValue)) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("报文存在差异(标签)：\n").append("服开报文\n").append("<").append(curOldNodeName).append(">").append(curOldNodeValue).append("</").append(curOldNodeName).append(">")
+                    .append("\n").append("编排报文\n").append("<").append(curOldNodeName).append(">").append(curNewNodeValue).append("</").append(curOldNodeName).append(">")
+                    .append("\n").append("节点路径 [").append(oldNode.getPath()).append("]")
+                    .append("\n================================\n");
+            list.add(stringBuilder.toString());
+        }
+
+        // 判断属性值
+        List<Attribute> oldAttributes = oldNode.attributes();
+        for (Attribute oldAttribute : oldAttributes) {
+            String name = oldAttribute.getName();
+            String oldValue = oldAttribute.getValue().trim();
+            Attribute attribute = newNode.attribute(name);
+            String newValue = attribute.getValue().trim();
+            if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
+                StringBuilder stringBuilder = new StringBuilder();
+                List<String> oldCollect = oldAttributes.stream().map(Node::asXML).collect(Collectors.toList());
+                List<String> newCollect = oldAttributes.stream().map(Node::asXML).collect(Collectors.toList());
+                stringBuilder.append("报文存在差异(属性)：\n").append("服开报文\n").append("<").append(curOldNodeName).append(StringUtils.join(oldCollect, " ")).append("/>")
+                        .append("\n").append("编排报文\n").append("<").append(curOldNodeName).append( StringUtils.join(newCollect, " ")).append("/>")
+                        .append("\n").append("节点路径 [").append(oldNode.getPath()).append("]")
+                        .append("\n================================\n");
+                list.add(stringBuilder.toString());
+                break;
+            }
+        }
+
+        // 递归遍历当前节点所有的子节点 -> 一级
+        List<Element> oldElements = oldNode.elements();
+        List<Element> newElements = newNode.elements();
+
+        for (int i = 0; i < oldElements.size(); i++) {
+            Element oldEle = oldElements.get(i);
+            Element newEle = newElements.get(i);
+            compare(oldEle, newEle, list);
+        }
+    }
+
+    /**
+     * 资源 - 报文比较
+     * 报文比较结构(节点)不一致，顺序不一致
+     */
     public static void compare(JSONObject oldObj, JSONObject newObj, String path, List<String> list) {
         Set<Map.Entry<String, Object>> oldEntrySet = oldObj.entrySet();
         for (Map.Entry<String, Object> entry : oldEntrySet) {
@@ -182,5 +238,4 @@ public class MessageCompareUtils {
                 .append("\n================================\n");
         return stringBuilder.toString();
     }
-
 }

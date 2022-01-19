@@ -132,12 +132,18 @@ public class MessageTask {
         JSONObject fk = new JSONObject();
         JSONUtils.dom4j2Json(DocumentHelper.parseText(fkSendOrderMessage).getRootElement(), fk);
 
-        List<String> diffResultList = new ArrayList<>();
-        MessageCompareUtils.compare(fk, bp, "root", diffResultList);
-        String msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
-        String orderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("orderId");
-        String workOrderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("workOrderId");
-        bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkSendOrderMessage, bpMessage, msgDiff);
+        // todo 判断当前是综调请求还是资源请求
+        if ("res".equals(type)) {
+            // 资源
+            List<String> diffResultList = new ArrayList<>();
+            MessageCompareUtils.compare(fk, bp, "root", diffResultList);
+            String msgDiff = org.apache.commons.lang3.StringUtils.join(diffResultList, "");
+            String orderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("orderId");
+            String workOrderId = DocumentHelper.parseText(fkSendOrderMessage).getRootElement().element("baseInfo").elementText("workOrderId");
+            bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkSendOrderMessage, bpMessage, msgDiff);
+        } else if ("zd".equals(type)) {
+
+        }
     }
 
     /**

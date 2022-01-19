@@ -1,25 +1,32 @@
 package org.iwhalecloud;
 
-import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
-import org.iwhalecloud.utils.*;
+import org.dom4j.Element;
+import org.iwhalecloud.utils.FileUtils;
+import org.iwhalecloud.utils.MessageCompareUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BasicTestDemo {
     public static void main(String[] args) throws Exception {
-        JSONObject bp = ParseUtil.parseXmlToJson(FileUtils.readFile("in/newXml.xml"));
-        JSONObject fk = ParseUtil.parseXmlToJson(FileUtils.readFile("in/oldXml.xml"));
+        String content = FileUtils.readFile("in/oldXml.xml");
+        String content2 = FileUtils.readFile("in/newXml.xml");
+        Document document = DocumentHelper.parseText(content);
+        Element rootElement = document.getRootElement();
 
-//        JSONObject fk = new JSONObject();
-//        JSONUtils.dom4j2Json(DocumentHelper.parseText(FileUtils.readFile("in/oldXml.xml")).getRootElement(), fk);
-
+        Document document2 = DocumentHelper.parseText(content2);
+        Element rootElement2 = document2.getRootElement();
         List<String> list = new ArrayList<>();
-        MessageCompareUtils.compare(fk, bp, "root", list);
-        System.out.println(StringUtils.join(list, ""));
+        MessageCompareUtils.compare(rootElement, rootElement2, list);
+
+        System.out.println(StringUtils.join(list, "\n"));
     }
-
-
 }
+
