@@ -2,6 +2,7 @@ package org.iwhalecloud.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.val;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Attribute;
@@ -48,9 +49,9 @@ public class MessageCompareUtils {
         List<Attribute> oldAttributes = oldNode.attributes();
         for (Attribute oldAttribute : oldAttributes) {
             String name = oldAttribute.getName();
-            String oldValue = oldAttribute.getValue().trim();
+            String oldValue = getAttributeVal(oldAttribute);
             Attribute newAttribute = newNode.attribute(name);
-            String newValue = newAttribute.getValue().trim();
+            String newValue = getAttributeVal(newAttribute);
             if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
                 list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "属性"));
                 // 一个标签内的属性比较出现问题，直接把整个标签打印出来，并且接下来的属性就不用做比较了。
@@ -237,6 +238,17 @@ public class MessageCompareUtils {
         }
         stringBuilder.append("</").append(parentTag).append("/>\n");
         return stringBuilder.toString();
+    }
+
+    private static String getAttributeVal(Attribute attribute){
+        if (attribute == null) {
+            return "";
+        }
+        String value = attribute.getValue();
+        if (StringUtils.isEmpty(value)) {
+            return value;
+        }
+        return value.trim();
     }
 
 }

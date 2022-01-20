@@ -30,7 +30,7 @@ public class BasicTestDemo {
         List<String> list = new ArrayList<>();
         MessageCompareUtils.compareForZd(oldRoot, newRoot, list);
         System.out.println(StringUtils.join(list, " "));
-    }
 
-}
+
+    }}
 
