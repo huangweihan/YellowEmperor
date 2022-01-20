@@ -17,6 +17,8 @@ public class BasicTestDemo {
         String newXml = FileUtils.readFile("in/newXml.xml");
         Element oldRoot = DocumentHelper.parseText(oldXml).getRootElement();
         Element newRoot = DocumentHelper.parseText(newXml).getRootElement();
+        oldRoot.selectSingleNode("IDA_SVR_OPEN//INPUT_XMLDATA//LineOrder//OrderInfos//OrderInfo//BssOrderId").setText("xxxxxxxxxxxxxxxxxxxx");
+        System.out.println(oldRoot.asXML());
 
 //        JSONObject fk = new JSONObject();
 //        ParseUtil.dom4j2Json(oldRoot, fk);
@@ -27,9 +29,9 @@ public class BasicTestDemo {
 //        MessageCompareUtils.compareForRes(fk, bp, "root",  list);
 //        System.out.println(StringUtils.join(list, " "));
 
-        List<String> list = new ArrayList<>();
-        MessageCompareUtils.compareForZd(oldRoot, newRoot, list);
-        System.out.println(StringUtils.join(list, " "));
+//        List<String> list = new ArrayList<>();
+//        MessageCompareUtils.compareForZd(oldRoot, newRoot, list);
+//        System.out.println(StringUtils.join(list, " "));
 
 
     }}

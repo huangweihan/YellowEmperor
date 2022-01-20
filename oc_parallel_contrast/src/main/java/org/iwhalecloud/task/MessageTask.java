@@ -69,7 +69,7 @@ public class MessageTask {
         for (Map<String, Object> ocApiInstMap : ocApiInstList) {
             // 判断 order_id work_order_id
             String msgCode = MapUtils.getString(ocApiInstMap, "MSG_CODE");
-            if (msgCode.contains("8712201201548275768")) {
+            if (msgCode.contains("8832201201635335771")) {
                 execute(ocApiInstMap);
             }
         }
@@ -93,7 +93,7 @@ public class MessageTask {
         String msgCode = MapUtils.getString(ocApiInstMap, "MSG_CODE");
         String[] fields = msgCode.split("#");
         String orderCode = fields[1];
-        orderCode = "8712109271535023734";
+        orderCode = "8832007141714250783";
         // 通过 编排环节id 查询配置表 转换得到 服开环节id
         List<Map<String, Object>> tacheMapList = bpJdbcTemplate.queryForList(GET_FK_TACHE_ID_SQL, bpTacheId); // todo 2022.1.20 非空判断
         Map<String, String> messageMap = getFkMessage(tacheMapList, orderCode);
@@ -224,8 +224,6 @@ public class MessageTask {
             // 服开回单报文获取可能为空，暂时跳过，不做回单
             if (ObjectUtils.nullSafeEquals("res", type)) {
                 // 测试
-                // sendOrderMap.put("IOM_XML", FileUtils.readFile("resource/fk-message.xml"));
-                // backOrderMap.put("OUT_XML", FileUtils.readFile("resource/fk-message-back.xml"));
                 sendOrderMap = messageDao.queryResSendOrderMessage(orderCode, fkTacheId);
                 backOrderMap = messageDao.queryResBackOrderMessage(orderCode, fkTacheId);
             } else if (ObjectUtils.nullSafeEquals("zd", type)) {
@@ -243,8 +241,6 @@ public class MessageTask {
                      messageMap.put("IOM_XML", new String((byte[]) sendOrderMap.get("IOM_XML"), "GBK"));
                     // 服开回单报文
                      messageMap.put("OUT_XML", new String((byte[]) backOrderMap.get("OUT_XML"), "GBK"));
-//                    messageMap.put("IOM_XML", MapUtils.getString(sendOrderMap, "IOM_XML"));
-//                    messageMap.put("OUT_XML", MapUtils.getString(backOrderMap, "OUT_XML"));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -258,16 +254,14 @@ public class MessageTask {
      * 替换派单服开报文中的 workOrderId
      */
     private String replaceMessage(String xml, String workOrderId, String type) {
-        try { // todo 格式优化、XML取值优化
+        try {
+            Document document = DocumentHelper.parseText(xml);
+            Element rootElement = document.getRootElement();
             if ("res".equals(type)) {
-                Document document = DocumentHelper.parseText(xml);
-                Element rootElement = document.getRootElement();
                 rootElement.element("baseInfo").element("workOrderId").setText(workOrderId);
                 return document.getRootElement().asXML();
             } else if ("zd".equals(type)) {
-                Document document = DocumentHelper.parseText(xml);
-                Element rootElement = document.getRootElement();
-                rootElement.element("IDA_SVR_OPEN").element("INPUT_XMLDATA").element("LineOrder").element("OrderInfos").element("OrderInfo").element("BssOrderId").setText(workOrderId);
+                rootElement.selectSingleNode("IDA_SVR_OPEN//INPUT_XMLDATA//LineOrder//OrderInfos//OrderInfo//BssOrderId").setText(workOrderId);
                 return document.getRootElement().asXML();
             }
         } catch (DocumentException e) {

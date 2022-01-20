@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -27,16 +28,20 @@ public class MessageDaoImpl implements MessageDao {
     public Map<String, Object> queryResSendOrderMessage(String orderCode, String tacheId) {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.RES_SEND_ORDER_SQL, orderCode, tacheId);
+        } catch (EmptyResultDataAccessException ex) {
+            logger.info("查询服开报文为空");
         } catch (Exception ex) {
-            logger.error("查询服开派单报文异常：\n{}", ex.getMessage());
+            logger.error("查询服开回单报文异常：\n{}", ex.getMessage());
         }
-         return null;
+        return null;
     }
 
     @Override
     public Map<String, Object> queryResBackOrderMessage(String orderCode, String tacheId) {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.RES_BACK_ORDER_SQL, orderCode, tacheId);
+        } catch (EmptyResultDataAccessException ex) {
+            logger.info("查询服开报文为空");
         } catch (Exception ex) {
             logger.error("查询服开回单报文异常：\n{}", ex.getMessage());
         }
@@ -47,6 +52,8 @@ public class MessageDaoImpl implements MessageDao {
     public Map<String, Object> queryZdSendOrderMessage(String orderCode, String tacheId) {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.ZD_SEND_ORDER_SQL, orderCode, tacheId);
+        } catch (EmptyResultDataAccessException ex) {
+            logger.info("查询服开报文为空");
         } catch (Exception ex) {
             logger.error("查询综调派单报文异常：\n{}", ex.getMessage());
         }
@@ -57,6 +64,8 @@ public class MessageDaoImpl implements MessageDao {
     public Map<String, Object> queryZdBackOrderMessage(String orderCode, String tacheId) {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.ZD_BACK_ORDER_SQL, orderCode, tacheId);
+        } catch (EmptyResultDataAccessException ex) {
+            logger.info("查询服开报文为空");
         } catch (Exception ex) {
             logger.error("查询综调回单报文异常：\n{}", ex.getMessage());
         }
