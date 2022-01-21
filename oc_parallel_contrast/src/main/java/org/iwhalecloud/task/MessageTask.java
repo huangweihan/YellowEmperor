@@ -80,8 +80,8 @@ public class MessageTask {
         // 获取编排的 workOrderId 取表 oc_api_inst 中的 ID
         String bpWorkOrderId = MapUtils.getString(ocApiInstMap, "ID");
         // 检验
-        // todo 使用 date_diff 代替
-        String checkSql = "select * from gw_bp_response_logs where  work_order_id = ? and state = 1 limit 1;";
+        // todo 使用 date_diff 代替  bug ++ plus pro
+        String checkSql = "select * from gw_bp_response_logs where  work_order_id = ?  limit 1;";
         Map<String, Object> checkMap = null;
         try {
             checkMap = bpJdbcTemplate.queryForMap(checkSql, bpWorkOrderId);
@@ -90,6 +90,10 @@ public class MessageTask {
         }
 
         if (checkMap != null && !checkMap.isEmpty()) {
+            String state = MapUtils.getString(checkMap, "state");
+            if (!"1".equals(state)) {
+                return;
+            }
             int level = MapUtils.getIntValue(checkMap, "level");
             if (level > 3) {
                 String updateSql = "update gw_bp_response_logs set state = 0 where work_order_id = ?;";
