@@ -29,7 +29,7 @@ public class MessageDaoImpl implements MessageDao {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.RES_SEND_ORDER_SQL, orderCode, tacheId);
         } catch (EmptyResultDataAccessException ex) {
-            logger.info("查询服开报文为空");
+            logger.info("orderCode[{}] tacheId[{}]查询服开报文为空", orderCode, tacheId);
         } catch (Exception ex) {
             logger.error("查询服开回单报文异常：\n{}", ex.getMessage());
         }
@@ -41,7 +41,7 @@ public class MessageDaoImpl implements MessageDao {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.RES_BACK_ORDER_SQL, orderCode, tacheId);
         } catch (EmptyResultDataAccessException ex) {
-            logger.info("查询服开报文为空");
+            logger.info("orderCode[{}] tacheId[{}]查询服开报文为空", orderCode, tacheId);
         } catch (Exception ex) {
             logger.error("查询服开回单报文异常：\n{}", ex.getMessage());
         }
@@ -53,7 +53,7 @@ public class MessageDaoImpl implements MessageDao {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.ZD_SEND_ORDER_SQL, orderCode, tacheId);
         } catch (EmptyResultDataAccessException ex) {
-            logger.info("查询服开报文为空");
+            logger.info("orderCode[{}] tacheId[{}]查询服开报文为空", orderCode, tacheId);
         } catch (Exception ex) {
             logger.error("查询综调派单报文异常：\n{}", ex.getMessage());
         }
@@ -65,7 +65,7 @@ public class MessageDaoImpl implements MessageDao {
         try {
             return fkJdbcTemplate.queryForMap(FkMessageConstant.ZD_BACK_ORDER_SQL, orderCode, tacheId);
         } catch (EmptyResultDataAccessException ex) {
-            logger.info("查询服开报文为空");
+            logger.info("orderCode[{}] tacheId[{}]查询服开报文为空", orderCode, tacheId);
         } catch (Exception ex) {
             logger.error("查询综调回单报文异常：\n{}", ex.getMessage());
         }

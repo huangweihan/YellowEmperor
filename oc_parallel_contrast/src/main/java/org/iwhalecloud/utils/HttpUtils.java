@@ -118,7 +118,6 @@ public class HttpUtils {
             }
             // 获取数据
             requestResult = bos.toString();
-            log.info(" ===== http请求结果[{}] ==== ", requestResult);
             requestResult = requestResult.replaceAll("<\\?xml version=\"1.0\" encoding=\"GB2312\"\\?>", "");
             requestResult = requestResult.replaceAll("<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>", "");
             return requestResult;
