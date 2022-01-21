@@ -1,276 +1,86 @@
-<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:com="http://common.ws.yn.oss.ztesoft.com">
-    <soapenv:Header/>
-    <soapenv:Body>
-        <com:rscService soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-            <infType xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">resAssignResponse</infType>
-            <head xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"></head>
-            <body xsi:type="soapenc:string" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">
-                <![CDATA[
-        <?xml version="1.0" encoding="UTF-8"?>
-<root><expInfo><orderItem>
-      <itemSpecId>10005</itemSpecId>
-      <desc>保留程控</desc>
-      <seq>1</seq>
-      <newItemVal>0PA013</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10005</itemSpecId>
-      <desc>保留程控</desc>
-      <seq>2</seq>
-      <newItemVal>0PA026</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10005</itemSpecId>
-      <desc>保留程控</desc>
-      <seq>3</seq>
-      <newItemVal>0PA040</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10005</itemSpecId>
-      <desc>保留程控</desc>
-      <seq>4</seq>
-      <newItemVal>6600409143</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300039</itemSpecId>
-      <desc>是否混合放号</desc>
-      <seq>1</seq>
-      <newItemVal>0</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300037</itemSpecId>
-      <desc>昆明支撑操作点</desc>
-      <seq>200</seq>
-      <newItemVal>71037</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300129</itemSpecId>
-      <desc>定单经过环节</desc>
-      <seq>1</seq>
-      <newItemVal>A|获|十</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300055</itemSpecId>
-      <desc>是否必须多PVC端口</desc>
-      <seq>1</seq>
-      <newItemVal>0</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300084</itemSpecId>
-      <desc>同址电话标识</desc>
-      <seq>1</seq>
-      <newItemVal>999</newItemVal>
-      <oldItemVal>999</oldItemVal>
-    </orderItem><orderItem>
-      <itemSpecId>300109</itemSpecId>
-      <desc>服务开通定单标识</desc>
-      <seq>1</seq>
-      <newItemVal>1276675</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300122</itemSpecId>
-      <desc>DDN MODEN来源</desc>
-      <seq>1</seq>
-      <newItemVal>自备</newItemVal>
-      <oldItemVal>自备</oldItemVal>
-    </orderItem><orderItem>
-      <itemSpecId>10092</itemSpecId>
-      <desc>付费方式</desc>
-      <seq>1</seq>
-      <newItemVal>1201</newItemVal>
-      <oldItemVal>1201</oldItemVal>
-    </orderItem><orderItem>
-      <itemSpecId>300068</itemSpecId>
-      <desc>定单主题</desc>
-      <seq>1</seq>
-      <newItemVal>固定电话 - 改号</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10001</itemSpecId>
-      <desc>产品实例ID</desc>
-      <seq>1</seq>
-      <newItemVal>2860</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10002</itemSpecId>
-      <desc>产品ID</desc>
-      <seq>1</seq>
-      <newItemVal>6600128000</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10045</itemSpecId>
-      <desc>服务编码</desc>
-      <seq>1</seq>
-      <newItemVal>4A004</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>301002</itemSpecId>
-      <desc>接入方式</desc>
-      <seq>1</seq>
-      <newItemVal>2</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300061</itemSpecId>
-      <desc>受理操作点</desc>
-      <seq>1</seq>
-      <newItemVal>600277</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300041</itemSpecId>
-      <desc>营业备注</desc>
-      <seq>1</seq>
-      <newItemVal> 定单主题：固定电话 - 改号</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10139</itemSpecId>
-      <desc>新接入号码</desc>
-      <seq>1</seq>
-      <newItemVal>63108255</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10141</itemSpecId>
-      <desc>旧接入号码</desc>
-      <seq>1</seq>
-      <newItemVal>63108255</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10620</itemSpecId>
-      <desc>计费号码</desc>
-      <seq>1</seq>
-      <newItemVal>63108255</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10082</itemSpecId>
-      <desc>地区ID</desc>
-      <seq>1</seq>
-      <newItemVal>8530103</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300097</itemSpecId>
-      <desc>客户ID</desc>
-      <seq>1</seq>
-      <newItemVal>740625</newItemVal>
-      <oldItemVal>740625</oldItemVal>
-    </orderItem><orderItem>
-      <itemSpecId>10035</itemSpecId>
-      <desc>客户名称</desc>
-      <seq>1</seq>
-      <newItemVal>傅素君</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10043</itemSpecId>
-      <desc>客户类型名称</desc>
-      <seq>1</seq>
-      <newItemVal>政企客户</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10397</itemSpecId>
-      <desc>客户级别</desc>
-      <seq>1</seq>
-      <newItemVal>普通</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>30005</itemSpecId>
-      <desc>局向ID</desc>
-      <seq>1</seq>
-      <newItemVal>101124164</newItemVal>
-      <oldItemVal>101129120</oldItemVal>
-    </orderItem><orderItem>
-      <itemSpecId>300062</itemSpecId>
-      <desc>受理员工</desc>
-      <seq>1</seq>
-      <newItemVal>徐奇</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10020</itemSpecId>
-      <desc>装机地址</desc>
-      <seq>1</seq>
-      <newItemVal>云南省昆明市盘龙区盘龙路29号省药检所宿舍1栋1单元701室</newItemVal>
-      <oldItemVal>云南省昆明市盘龙区盘龙路29号省药检所宿舍1栋1单元701室</oldItemVal>
-    </orderItem><orderItem>
-      <itemSpecId>10022</itemSpecId>
-      <desc>联系人</desc>
-      <seq>1</seq>
-      <newItemVal>傅素君TG</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10023</itemSpecId>
-      <desc>联系电话</desc>
-      <seq>1</seq>
-      <newItemVal>15308895347</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300054</itemSpecId>
-      <desc>用户名称</desc>
-      <seq>1</seq>
-      <newItemVal>傅素君TG</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>10042</itemSpecId>
-      <desc>标准地址ID</desc>
-      <seq>1</seq>
-      <newItemVal>5238250</newItemVal>
-      <oldItemVal>5238250</oldItemVal>
-    </orderItem><orderItem>
-      <itemSpecId>300065</itemSpecId>
-      <desc>同笔定单号</desc>
-      <seq>1</seq>
-      <newItemVal>600006214403</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300051</itemSpecId>
-      <desc>工单到达时间</desc>
-      <seq>1</seq>
-      <newItemVal>2022-01-12 15:08:37</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300052</itemSpecId>
-      <desc>预警时间</desc>
-      <seq>1</seq>
-      <newItemVal>2022-01-12 15:53:36</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300053</itemSpecId>
-      <desc>告警时间</desc>
-      <seq>1</seq>
-      <newItemVal>2022-01-12 16:38:36</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300037</itemSpecId>
-      <desc>默认操作点</desc>
-      <seq>1</seq>
-      <newItemVal>048</newItemVal>
-      <oldItemVal/>
-    </orderItem><orderItem>
-      <itemSpecId>300130</itemSpecId>
-      <desc>4G号码已迁出标识</desc>
-      <seq>1</seq>
-      <newItemVal>0</newItemVal>
-      <oldItemVal/>
-    </orderItem></expInfo><baseInfo>
-    <orderId>8712201121321325660</orderId>
-    <workOrderId>5829755</workOrderId>
-    <actionNo>骆</actionNo>
-    <assignType>骆</assignType>
-    <seq/>
-    <productId>6600128000</productId>
-    <accessNumber>63108255</accessNumber>
-    <accessType>1</accessType>
-    <InstallFlag>0</InstallFlag>
-    <inteOrderDispSeq>1</inteOrderDispSeq>
-    <orgId/>
-    <dispStaffId/>
-    <stateDate>2022-01-12 15:08:37</stateDate>
-    <returnId/>
-    <displDate/>
-    <complDate/>
-    <handingStaffId/>
-    <remarks/>
-    <orderFlag/>
-    <areaId>8530103</areaId>
-  </baseInfo></root>
-]]>
-            </body>
-        </com:rscService>
-    </soapenv:Body>
-</soapenv:Envelope>
+<SERVICE_ORDER_PACKAGE>
+    <PUBLIC>
+        <CRM_ORDER_CODE>390001238903</CRM_ORDER_CODE>
+        <ACCEPT_STAFF_NAME>王萃</ACCEPT_STAFF_NAME>
+        <CURRENT_SO_NUM>1</CURRENT_SO_NUM>
+        <CUST_SO_NUM>1</CUST_SO_NUM>
+        <CUST_ID>407798</CUST_ID>
+        <STATE_DATE>2020-07-14 17:37:12</STATE_DATE>
+        <CREATE_DATE>2020-07-14 17:37:12</CREATE_DATE>
+        <CHANGE_NUM/>
+        <ORG_NAME>临沧市电信分公司</ORG_NAME>
+        <REVISION>5751817</REVISION>
+    </PUBLIC>
+    <OM_SERVICE_ORDER CRM_SO_ID="8832007141714250783" SO_TYPE="10N" CRM_ORDER_PRIORITY="1" CRM_ORDER_TYPE="10N" INDEP_PROD_ID="FP1001" INDEP_PROD_INST_ID="390000719501" OLD_INDEP_PROD_ID="" ACCEPT_DATE="2020-07-14 09:08:31" NEED_CHARGE_FLAG="0" CUST_TYPE="1000" CUST_GRADE_ID="0" COMMENTS="" AREA_ID="8530902" SO_AREA_ID="8530902" ORDER_TITLE="有线宽带 - 移机--装机" ACC_NBR="A00000445072" CONTACT_NBR="18908830115" CONTACT_NAME="中国电信股份有限公司临沧分公司" RETURN_REASON_ID="10000" MEMBER_GRADE="" IOM_EVENT="1325" IOM_ORDER_CODE="8832007141714250783" IOM_WORK_ID="5751817" NET_ACCOUNT="a000001030300" TERMINAL_GROUP_ID="" IP_PROPERTY="" IS_DISPATCH="" URGE_NUM_SUM="" DDM_MARK="1" ZQ_MARK="空">
+        <OM_SO_PARTY PARTY_ID="833728819" PARTY_NAME="中国电信股份有限公司临沧分公司" ROLE_TYPE="2" PARTY_TYPE="USE"/>
+        <OM_SO_PARTY PARTY_ID="833728819" PARTY_NAME="中国电信股份有限公司临沧分公司" ROLE_TYPE="1" PARTY_TYPE="CUS"/>
+        <OM_SO_SLA FIRST_BESP_CONSTRUCT_DATE="2020-07-15 12:00:00" ORDER_PRIORITY="" BESP_CONSTRUCT_DATE="2020-07-15 12:00:00" ACTIVE_LIMIT="" SERVICE_GRADE="" NETWORK_GRADE="" MAINTENANCE_GRADE="" EESP_DATE="" OPER_TYPE="" OPER_ID="" OPER_NAME=""/>
+        <OM_INDEP_PROD_ORDER_EVT EVT_WITH_PROD_ID="1325"/>
+        <OM_SO_ACCESS>
+            <PM_ACCESS ADDR_ID="11745034" ADDR_NAME="云南省临沧市临翔区凤翔街道枢纽大楼五楼支撑中心(测试)FTTH-01" SERVICE_AREA_ID="" SERVICE_AREA_NAME="" EXCH_ID="8530902-4530086" EXCH_NAME="临翔区世纪路枢纽大楼" INDEP_PROD_INST_ID="390000719501" AREA_ID="8530902" ACT_TYPE="DEL"/>
+            <PM_ACCESS ADDR_ID="8640682" ADDR_NAME="云南省临沧市临翔区凤翔街道烽火测试（FTTH）" SERVICE_AREA_ID="" SERVICE_AREA_NAME="" EXCH_ID="8530902-4530100" EXCH_NAME="临翔区南京凹" INDEP_PROD_INST_ID="390000719501" AREA_ID="8530902" ACT_TYPE="ADD"/>
+        </OM_SO_ACCESS>
+        <OM_SO_ACC_NBR>
+            <PM_NBR ACC_NBR="A00000445072" ACC_NBR_TYPE="6000" ACT_TYPE="ADD"/>
+        </OM_SO_ACC_NBR>
+        <OM_SO_ATTR ATTR_CODE="WORK_ORDER_ID" ATTR_VALUE="5751817"/>
+        <OM_SO_ATTR ATTR_CODE="EVT_WITH_PROD_ID" ATTR_VALUE="1325"/>
+        <OM_SO_ATTR ATTR_CODE="SERVICE_ID" ATTR_VALUE="2680"/>
+        <OM_SO_ATTR ATTR_CODE="TACHE_CODE" ATTR_VALUE="ZJ"/>
+        <OM_SO_ATTR ATTR_CODE="ORDER_ID" ATTR_VALUE="1230036"/>
+        <OM_SO_ATTR ATTR_CODE="ORDER_CODE" ATTR_VALUE="8832007141714250783"/>
+        <OM_SO_ATTR ATTR_CODE="ADDRESS_NAME" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="OLT_NAME" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="MS_NAME" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="ZQ_LEVEL" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="USER_IMPORTANT_LEVEL" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="ASK_SOURCE" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="KD_SPEED" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="LAN_TERMMODE" ATTR_VALUE="0"/>
+        <OM_SO_ATTR ATTR_CODE="PRIVATE_ID" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="PRIVATE_NAME" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="PRIVATE_CODE" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="RELATE_ACC_NBR" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="ZNKDCONBR" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="ZNZWCONBR" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="ZNZWDEPROD" ATTR_VALUE=""/>
+        <OM_SO_ATTR ATTR_CODE="TACHENAME" ATTR_VALUE="装机"/>
+        <OM_SO_ATTR ATTR_CODE="CONSTRUCTION_TACHES" ATTR_VALUE="|4845|4000|4005|"/>
+        <OM_SO_ATTR ATTR_CODE="PCR_FLAG" ATTR_VALUE="N"/>
+        <OM_SO_ATTR ATTR_CODE="BSS_SYSTEM" ATTR_VALUE="3"/>
+        <OM_SO_ATTR ATTR_CODE="111111121" ATTR_VALUE="2020-07-15 12:00"/>
+        <OM_SO_ATTR ATTR_CODE="201806041" ATTR_VALUE="cc989f7fc56e11ea84f1a3bcc8b8201f"/>
+        <OM_SO_ATTR ATTR_CODE="2232" ATTR_VALUE="1814"/>
+        <OM_SO_ATTR ATTR_CODE="2233" ATTR_VALUE="邱泰发"/>
+        <OM_SO_ATTR ATTR_CODE="2234" ATTR_VALUE="18988318244"/>
+        <OM_SO_ATTR ATTR_CODE="ADDR_STD_CODE" ATTR_VALUE="11745034"/>
+        <OM_SO_ATTR ATTR_CODE="ADDR_STD_NAME" ATTR_VALUE="云南省临沧市临翔区凤翔街道枢纽大楼五楼支撑中心(测试)FTTH-01"/>
+        <OM_SO_ATTR ATTR_CODE="GRID_ID" ATTR_VALUE="1215441"/>
+        <OM_SO_ATTR ATTR_CODE="RELA_USER_NAME" ATTR_VALUE="中国电信股份有限公司临沧分公司"/>
+        <OM_SO_ATTR ATTR_CODE="SERV_NO" ATTR_VALUE="3E012"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="111111151" CHARACTER_NAME="999" CHARACTER_VALUE="999" OLD_CHARACTER_VALUE="999" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="111111152" CHARACTER_NAME="现堪资源" CHARACTER_VALUE="现堪资源" OLD_CHARACTER_VALUE="现堪资源" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="123102113" CHARACTER_NAME="0" CHARACTER_VALUE="0" OLD_CHARACTER_VALUE="0" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="530188" CHARACTER_NAME="空" CHARACTER_VALUE="空" OLD_CHARACTER_VALUE="空" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="530189" CHARACTER_NAME="是" CHARACTER_VALUE="1" OLD_CHARACTER_VALUE="1" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="870001303" CHARACTER_NAME="电信提供" CHARACTER_VALUE="14" OLD_CHARACTER_VALUE="14" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="870003001" CHARACTER_NAME="50" CHARACTER_VALUE="50" OLD_CHARACTER_VALUE="50" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="870003002" CHARACTER_NAME="10" CHARACTER_VALUE="10" OLD_CHARACTER_VALUE="10" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="870003003" CHARACTER_NAME="10" CHARACTER_VALUE="10" OLD_CHARACTER_VALUE="10" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="871016" CHARACTER_NAME="中国电信股份有限公司临沧分公司" CHARACTER_VALUE="中国电信股份有限公司临沧分公司" OLD_CHARACTER_VALUE="中国电信股份有限公司临沧分公司" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="ACCT_NO" CHARACTER_NAME="a000001030300" CHARACTER_VALUE="a000001030300" OLD_CHARACTER_VALUE="a000001030300" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="BILL_ID" CHARACTER_NAME="宽带普通" CHARACTER_VALUE="10203" OLD_CHARACTER_VALUE="10203" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="CUTOVER_MODE" CHARACTER_NAME="FTTH接入" CHARACTER_VALUE="2" OLD_CHARACTER_VALUE="2" ACT_TYPE="MOD"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="FAVOURABLE_TYPE" CHARACTER_NAME="不赠送" CHARACTER_VALUE="A" OLD_CHARACTER_VALUE="A" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="IF_KIDNAPPER" CHARACTER_NAME="是" CHARACTER_VALUE="1" OLD_CHARACTER_VALUE="1" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="PASSWD" CHARACTER_NAME="a123456" CHARACTER_VALUE="a123456" OLD_CHARACTER_VALUE="a123456" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="PASS_WORD" CHARACTER_NAME="583416" CHARACTER_VALUE="583416" OLD_CHARACTER_VALUE="583416" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="PPPOE_ACCT_COUNT" CHARACTER_NAME="3个用户" CHARACTER_VALUE="3" OLD_CHARACTER_VALUE="3" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="PREPAY_FLAG" CHARACTER_NAME="1201" CHARACTER_VALUE="1201" OLD_CHARACTER_VALUE="1201" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="PURPOSE" CHARACTER_NAME="个人" CHARACTER_VALUE="1" OLD_CHARACTER_VALUE="1" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="ProdLinkManName" CHARACTER_NAME="中国电信股份有限公司临沧分公司" CHARACTER_VALUE="中国电信股份有限公司临沧分公司" OLD_CHARACTER_VALUE="" ACT_TYPE="ADD"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="ProdLinkManTele" CHARACTER_NAME="18908830115" CHARACTER_VALUE="18908830115" OLD_CHARACTER_VALUE="" ACT_TYPE="ADD"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="SPEED_TYPE" CHARACTER_NAME="50MBPS" CHARACTER_VALUE="50" OLD_CHARACTER_VALUE="50" ACT_TYPE="KEEP"/>
+        <OM_INDEP_PROD_ORDER_ATTR INDEP_PROD_ID="FP1001" CHARACTER_ID="Term_Type" CHARACTER_NAME="普通终端" CHARACTER_VALUE="00" OLD_CHARACTER_VALUE="00" ACT_TYPE="KEEP"/>
+    </OM_SERVICE_ORDER>
+</SERVICE_ORDER_PACKAGE>

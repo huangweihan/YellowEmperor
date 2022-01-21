@@ -40,9 +40,9 @@ public class MessageCompareUtils {
         String curOldNodeValue = oldNode.getTextTrim();
         String curNewNodeValue = newNode.getTextTrim();
 
-        // 判断标签值
+        // 判断属性值
         if (!curOldNodeValue.equals(curNewNodeValue)) {
-            list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "标签"));
+            list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "报文存在差异(属性)"));
         }
 
         // 判断属性值
@@ -53,7 +53,7 @@ public class MessageCompareUtils {
             Attribute newAttribute = newNode.attribute(name);
             String newValue = getAttributeVal(newAttribute);
             if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
-                list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "属性"));
+                list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "报文存在差异(标签)"));
                 // 一个标签内的属性比较出现问题，直接把整个标签打印出来，并且接下来的属性就不用做比较了。
                 break;
             }
@@ -64,10 +64,62 @@ public class MessageCompareUtils {
         List<Element> newElements = newNode.elements();
 
         for (int i = 0; i < oldElements.size(); i++) {
-            Element oldEle = oldElements.get(i);
-            Element newEle = newElements.get(i);
+            Element newEle = null;
+            Element oldEle  = oldElements.get(i);;
+
+            if (oldElements.size() == newElements.size()) {
+                // 当两报文的size相等时，按照报文格式结构以及顺序一致比较
+                newEle = newElements.get(i);
+                compareForZd(oldEle, newEle, list);
+                continue;
+            }
+            newEle = lookNodeByCount(oldEle, newNode.elements());
+            if (newEle == null) {
+                // 对应的服开报文不存在该节点
+                list.add(assemblyDiffForZdMadeInChina(oldEle, null, "对应的编排报文不存在当前节点"));
+                continue;
+            }
             compareForZd(oldEle, newEle, list);
         }
+    }
+
+    private static Element lookNodeByCount(Element oldE, List<Element> elements){
+        int max = (1 + oldE.attributes().size()) / 2;
+        int count = 0;
+        Element candidate = null;
+        for (Element bpE : elements) {
+            count = valueHitExplore(oldE, bpE);
+            if (max < count) {
+                candidate = bpE;
+                max = count;
+            }
+        }
+        return candidate;
+    }
+
+    private static int valueHitExplore(Element fk, Element bp){
+        int count = 0;
+        String fkName = fk.getName();
+        String bpName = bp.getName();
+        if (!fkName.equals(bpName)) {
+            return -1;
+        }
+        String fkText = fk.getText();
+        String bpText = bp.getText();
+        if (fkText.equals(bpText)) {
+            count++;
+        }
+        List<Attribute> fkAttributes = fk.attributes();
+        for (Attribute fkAttribute : fkAttributes) {
+            String fkAttributeName = fkAttribute.getName();
+            String fkAttributeValue = fkAttribute.getValue();
+
+            Attribute attribute = bp.attribute(fkAttributeName);
+            if (attribute != null && StringUtils.equals(fkAttributeValue, attribute.getValue())) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -149,9 +201,11 @@ public class MessageCompareUtils {
 
     public static String assemblyDiffForZdMadeInChina(Element fk, Element bp, String title) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("报文存在差异-").append(title).append("\n");
-        stringBuilder.append("服开报文\n").append(madeInChina(fk)).append("\n")
-                .append("\n编排报文\n").append(madeInChina(bp)).append("\n");
+        stringBuilder.append(title).append("\n");
+        stringBuilder.append("服开报文\n").append(madeInChina(fk)).append("\n");
+        if (bp != null) {
+            stringBuilder.append("\n编排报文\n").append(madeInChina(bp)).append("\n");
+        }
         String path = fk.getPath();
         if (path.startsWith("/")) {
             path = path.substring(1);

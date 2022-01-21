@@ -13,12 +13,10 @@ import java.util.List;
 
 public class BasicTestDemo {
     public static void main(String[] args) throws Exception {
-        String oldXml = FileUtils.readFile("in/oldXml.xml");
-        String newXml = FileUtils.readFile("in/newXml.xml");
+        String oldXml = FileUtils.readFile("resource/fk-message.xml");
+        String newXml = FileUtils.readFile("resource/bp-message.xml");
         Element oldRoot = DocumentHelper.parseText(oldXml).getRootElement();
         Element newRoot = DocumentHelper.parseText(newXml).getRootElement();
-        oldRoot.selectSingleNode("IDA_SVR_OPEN//INPUT_XMLDATA//LineOrder//OrderInfos//OrderInfo//BssOrderId").setText("xxxxxxxxxxxxxxxxxxxx");
-        System.out.println(oldRoot.asXML());
 
 //        JSONObject fk = new JSONObject();
 //        ParseUtil.dom4j2Json(oldRoot, fk);
@@ -29,9 +27,9 @@ public class BasicTestDemo {
 //        MessageCompareUtils.compareForRes(fk, bp, "root",  list);
 //        System.out.println(StringUtils.join(list, " "));
 
-//        List<String> list = new ArrayList<>();
-//        MessageCompareUtils.compareForZd(oldRoot, newRoot, list);
-//        System.out.println(StringUtils.join(list, " "));
+        List<String> list = new ArrayList<>();
+        MessageCompareUtils.compareForZd(oldRoot, newRoot, list);
+        System.out.println(StringUtils.join(list, " "));
 
 
     }}
