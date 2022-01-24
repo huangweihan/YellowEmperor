@@ -36,9 +36,7 @@ public class BasicTestDemo {
 //        MessageCompareUtils.compareForZd(oldRoot, newRoot, list);
 //        System.out.println(StringUtils.join(list, " "));
 
-        LocalDateTime localDateTime = LocalDateTime.parse("2022-01-21T16:36:52");
-        String format = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
-        System.out.println(format);
 
-    }}
+    }
+}
 
