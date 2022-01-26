@@ -1,6 +1,7 @@
 package org.iwhalecloud.constant;
 
 public class SoapConstant {
+
     private SoapConstant(){}
 
     // 统一资源回单soap头

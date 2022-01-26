@@ -8,13 +8,13 @@ import org.iwhalecloud.utils.FileUtils;
 import org.iwhalecloud.utils.MessageCompareUtils;
 import org.iwhalecloud.utils.ParseUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class BasicTestDemo {
     public static void main(String[] args) throws Exception {
@@ -36,7 +36,14 @@ public class BasicTestDemo {
 //        MessageCompareUtils.compareForZd(oldRoot, newRoot, list);
 //        System.out.println(StringUtils.join(list, " "));
 
+        Properties properties = new Properties();
+        FileInputStream fileInputStream = new FileInputStream(new File("E:\\work\\code\\tool\\oc_parallel_contrast\\src\\main\\resources\\admin.properties"));
+        properties.load(fileInputStream);
 
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            System.out.println(entry.getKey());
+            System.out.println(entry.getValue());
+        }
     }
 }
 

@@ -38,7 +38,7 @@ public class MessageTask {
 
     // 编排查询已派发未回单
     // private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD')  ";
-    private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD') AND CREATE_DATE > '2022-01-21 00:00:00';";
+    private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD') AND CREATE_DATE > '2022-01-25 00:00:00';";
 
     // 根据编排的环节id转成成服开对应的环节id。存在一对多映射关系，返回多个去查询只会匹配到一个报文
     private static final String GET_FK_TACHE_ID_SQL = "SELECT fk_tache_id,port_type FROM gw_tache_map WHERE bp_tache_id = ?;";
@@ -56,13 +56,15 @@ public class MessageTask {
     @Autowired
     private InterfaceConfig interfaceConfig;
 
-    @Scheduled(cron = "${time.task.cron}")
+    // @Scheduled(cron = "${time.task.cron}")
+    @Scheduled(cron = "0/10 * * * * ? ")
     public void endAlarmMessage() throws Exception {
         logger.info(" =========== 定时任务开启 =========== ");
         // 查询编排 派单未回单 的记录
         List<Map<String, Object>> ocApiInstList = bpJdbcTemplate.queryForList(BP_OC_API_INST_SQL);
         if (ocApiInstList.isEmpty()) {
             logger.info("查询oc_api_inst为空，跳过本次处理");
+            logger.info(" =========== 定时任务结束 =========== ");
             return;
         }
         for (Map<String, Object> ocApiInstMap : ocApiInstList) {
@@ -100,14 +102,15 @@ public class MessageTask {
         String msgCode = MapUtils.getString(ocApiInstMap, "MSG_CODE");
         String[] fields = msgCode.split("#");
         String orderCode = fields[1];
-
         // 通过 编排环节id 查询配置表 转换得到 服开环节id
         List<Map<String, Object>> tacheMapList = bpJdbcTemplate.queryForList(GET_FK_TACHE_ID_SQL, bpTacheId);
         if (tacheMapList.isEmpty()) {
             logger.error("根据编排环节id:{} 找不到对应的服开环节id", bpTacheId);
             return;
         }
-        Map<String, String> messageMap = getFkMessage(tacheMapList, orderCode);
+        // 8792112241308295455 资源
+        // 8722011161040291581 综调
+        Map<String, String> messageMap = getFkMessage(tacheMapList, "8792112241308295455");
 
         // 服开派单报文
         String fkSendOrderMessage = MapUtils.getString(messageMap, "IOM_XML", "");
@@ -140,23 +143,19 @@ public class MessageTask {
         // 服开派单报文进行 转为编排这边的 workOrderId
         String requestType = MapUtils.getString(messageMap, "type");
         // 订单状态
-        String status = MapUtils.getString(messageMap, "status");
-        if("10R".equals(status)) {
+        String state = MapUtils.getString(messageMap, "state");
+        if("10R".equals(state)) {
             // 退单
-            replaceMessage(fkBackOrderMessage, bpWorkOrderId, requestType);
-            String result = "";
+            fkBackOrderMessage = replaceMessage(fkBackOrderMessage, bpWorkOrderId, requestType);
             if ("res".equals(requestType)) {
                 fkBackOrderMessage = addSoapHead(fkBackOrderMessage, SoapConstant.RES_QUIT_ORDER_SOAP_HEAD);
-                result = HttpUtils.callWebService(fkBackOrderMessage, interfaceConfig.getResToBeInstalledServiceUrl());
+                HttpUtils.callWebService(fkBackOrderMessage, interfaceConfig.getResToBeInstalledServiceUrl());
             } else {
                 fkBackOrderMessage = addSoapHead(fkBackOrderMessage, SoapConstant.ZD_QUIT_ORDER_SOAP_HEAD);
-                result = HttpUtils.callWebService(fkBackOrderMessage, interfaceConfig.getIntegratedSchedulWebServiceUrl());
+                HttpUtils.callWebService(fkBackOrderMessage, interfaceConfig.getIntegratedSchedulWebServiceUrl());
             }
-            result = ParseUtil.xmlRoughParse(result, "root");
-            logger.info(" ===== 回单结果： [{}] ==== ", result);
             return;
         }
-
 
         fkBackOrderMessage = replaceMessage(fkBackOrderMessage, bpWorkOrderId, requestType);
         // 服开派单没有协议头
@@ -224,8 +223,6 @@ public class MessageTask {
             return;
         }
         logger.info("==== 报文比较存在差异 =====");
-        Assert.notNull(workOrderId, "workOrderId 在报文中没有查询到！");
-        Assert.notNull(orderId, "orderId 在报文中没有查询到！");
         bpJdbcTemplate.update(MSG_DIFF_SQL, orderId, workOrderId, fkMessage, bpMessage, msgDiff);
     }
 
@@ -281,12 +278,12 @@ public class MessageTask {
                 messageMap.put("url", MapUtils.getString(requestMap, "url"));
                 messageMap.put("type", type);
                 messageMap.put("soapHead", MapUtils.getString(requestMap, "soapHead"));
+                messageMap.put("state", MapUtils.getString(sendOrderMap, "state"));
                 try {
                     // 服开派单报文
                     messageMap.put("IOM_XML", new String((byte[]) sendOrderMap.get("IOM_XML"), "GBK"));
                     // 服开回单报文(当状态是10R，回单报文为空)
-                    String fkBackMessage = MapUtils.getString(backOrderMap, "OUT_XML", "");
-                    messageMap.put("OUT_XML", new String(fkBackMessage.getBytes(), "GBK"));
+                    messageMap.put("OUT_XML", new String((byte[]) backOrderMap.get("OUT_XML"), "GBK"));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

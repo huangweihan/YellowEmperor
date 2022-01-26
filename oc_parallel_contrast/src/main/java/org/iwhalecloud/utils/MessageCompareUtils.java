@@ -2,7 +2,6 @@ package org.iwhalecloud.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import lombok.val;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Attribute;
@@ -35,33 +34,33 @@ public class MessageCompareUtils {
      * 综调 - 报文比较
      * 报文比较结构(节点)一致，顺序一致
      */
-    public static void compareForZd(Element oldNode, Element newNode, List<String> list) {
+    public static void compareForZd(Element fkNode, Element bpNode, List<String> list) {
         // 当前节点的名称、文本内容和属性
-        String curOldNodeValue = oldNode.getTextTrim();
-        String curNewNodeValue = newNode.getTextTrim();
+        String curOldNodeValue = fkNode.getTextTrim();
+        String curNewNodeValue = bpNode.getTextTrim();
 
         // 判断属性值
         if (!curOldNodeValue.equals(curNewNodeValue)) {
-            list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "报文存在差异(属性)"));
+            list.add(assemblyDiffForZd(fkNode, bpNode, "报文存在差异(属性)"));
         }
 
         // 判断属性值
-        List<Attribute> oldAttributes = oldNode.attributes();
+        List<Attribute> oldAttributes = fkNode.attributes();
         for (Attribute oldAttribute : oldAttributes) {
             String name = oldAttribute.getName();
             String oldValue = getAttributeVal(oldAttribute);
-            Attribute newAttribute = newNode.attribute(name);
+            Attribute newAttribute = bpNode.attribute(name);
             String newValue = getAttributeVal(newAttribute);
             if (!ObjectUtils.nullSafeEquals(oldValue, newValue)) {
-                list.add(assemblyDiffForZdMadeInChina(oldNode, newNode, "报文存在差异(标签)"));
+                list.add(assemblyDiffForZd(fkNode, bpNode, "报文存在差异(标签)"));
                 // 一个标签内的属性比较出现问题，直接把整个标签打印出来，并且接下来的属性就不用做比较了。
                 break;
             }
         }
 
         // 递归遍历当前节点所有的子节点 -> 一级
-        List<Element> oldElements = oldNode.elements();
-        List<Element> newElements = newNode.elements();
+        List<Element> oldElements = fkNode.elements();
+        List<Element> newElements = bpNode.elements();
 
         for (int i = 0; i < oldElements.size(); i++) {
             Element newEle = null;
@@ -73,10 +72,10 @@ public class MessageCompareUtils {
                 compareForZd(oldEle, newEle, list);
                 continue;
             }
-            newEle = lookNodeByCount(oldEle, newNode.elements());
+            newEle = lookNodeByCount(oldEle, bpNode.elements());
             if (newEle == null) {
                 // 对应的服开报文不存在该节点
-                list.add(assemblyDiffForZdMadeInChina(oldEle, null, "对应的编排报文不存在当前节点"));
+                list.add(assemblyDiffForZd(oldEle, null, "对应的编排报文不存在当前节点"));
                 continue;
             }
             compareForZd(oldEle, newEle, list);
@@ -199,12 +198,12 @@ public class MessageCompareUtils {
         return ObjectUtils.nullSafeEquals(newItemSpecId, oldItemSpecId);
     }
 
-    public static String assemblyDiffForZdMadeInChina(Element fk, Element bp, String title) {
+    public static String assemblyDiffForZd(Element fk, Element bp, String title) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(title).append("\n");
-        stringBuilder.append("服开报文\n").append(madeInChina(fk)).append("\n");
+        stringBuilder.append("服开报文\n").append(assemblyDiffForZd(fk)).append("\n");
         if (bp != null) {
-            stringBuilder.append("\n编排报文\n").append(madeInChina(bp)).append("\n");
+            stringBuilder.append("\n编排报文\n").append(assemblyDiffForZd(bp)).append("\n");
         }
         String path = fk.getPath();
         if (path.startsWith("/")) {
@@ -216,7 +215,7 @@ public class MessageCompareUtils {
         return stringBuilder.toString();
     }
 
-    private static String madeInChina(Element element) {
+    private static String assemblyDiffForZd(Element element) {
         StringBuilder stringBuilder = new StringBuilder();
         List<Attribute> attributes = element.attributes();
         String key = element.getName();

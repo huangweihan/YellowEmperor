@@ -120,6 +120,8 @@ public class HttpUtils {
             requestResult = bos.toString();
             requestResult = requestResult.replaceAll("<\\?xml version=\"1.0\" encoding=\"GB2312\"\\?>", "");
             requestResult = requestResult.replaceAll("<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>", "");
+            requestResult = ParseUtil.xmlRoughParse(requestResult, "root");
+            log.info(" ===== wb请求结果[{}] ==== ", requestResult);
             return requestResult;
         } catch (Exception e) {
             log.error("Exception error =========>HttpRequestUtils.httpWebService.error===============>{}",e.getMessage());
