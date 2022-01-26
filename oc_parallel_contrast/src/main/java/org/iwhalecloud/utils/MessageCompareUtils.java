@@ -62,28 +62,33 @@ public class MessageCompareUtils {
         List<Element> oldElements = fkNode.elements();
         List<Element> newElements = bpNode.elements();
 
-        for (int i = 0; i < oldElements.size(); i++) {
+        for (Element oldElement : oldElements) {
             Element newEle = null;
-            Element oldEle  = oldElements.get(i);;
-
-            if (oldElements.size() == newElements.size()) {
-                // 当两报文的size相等时，按照报文格式结构以及顺序一致比较
-                newEle = newElements.get(i);
-                compareForZd(oldEle, newEle, list);
-                continue;
+            int size = oldElement.elements().size();
+            if (size > 0) {
+                String oldElementName = oldElement.getName();
+                for (Element candidateNewElement : newElements) {
+                    String newElementName = candidateNewElement.getName();
+                    if (ObjectUtils.nullSafeEquals(oldElementName, newElementName)) {
+                        newEle = candidateNewElement;
+                        break;
+                    }
+                }
+            } else {
+                newEle = lookNodeByWeight(oldElement, bpNode.elements());
             }
-            newEle = lookNodeByCount(oldEle, bpNode.elements());
+
             if (newEle == null) {
                 // 对应的服开报文不存在该节点
-                list.add(assemblyDiffForZd(oldEle, null, "对应的编排报文不存在当前节点"));
+                list.add(assemblyDiffForZd(oldElement, null, "对应的编排报文不存在当前节点"));
                 continue;
             }
-            compareForZd(oldEle, newEle, list);
+            compareForZd(oldElement, newEle, list);
         }
     }
 
-    private static Element lookNodeByCount(Element oldE, List<Element> elements){
-        int max = (1 + oldE.attributes().size()) / 2;
+    private static Element lookNodeByWeight(Element oldE, List<Element> elements) {
+        int max = 0;
         int count = 0;
         Element candidate = null;
         for (Element bpE : elements) {
@@ -96,16 +101,17 @@ public class MessageCompareUtils {
         return candidate;
     }
 
-    private static int valueHitExplore(Element fk, Element bp){
+    private static int valueHitExplore(Element fk, Element bp) {
         int count = 0;
         String fkName = fk.getName();
         String bpName = bp.getName();
         if (!fkName.equals(bpName)) {
             return -1;
         }
+        count++;
         String fkText = fk.getText();
         String bpText = bp.getText();
-        if (fkText.equals(bpText)) {
+        if ((StringUtils.isEmpty(fkText) && StringUtils.isEmpty(bpText)) || fkText.equals(bpText)) {
             count++;
         }
         List<Attribute> fkAttributes = fk.attributes();
@@ -293,7 +299,7 @@ public class MessageCompareUtils {
         return stringBuilder.toString();
     }
 
-    private static String getAttributeVal(Attribute attribute){
+    private static String getAttributeVal(Attribute attribute) {
         if (attribute == null) {
             return "";
         }

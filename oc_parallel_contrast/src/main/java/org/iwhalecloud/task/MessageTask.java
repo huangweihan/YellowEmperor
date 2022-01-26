@@ -38,10 +38,10 @@ public class MessageTask {
 
     // 编排查询已派发未回单
     // private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD')  ";
-    private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD') AND CREATE_DATE > '2022-01-25 00:00:00';";
+    private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD') AND CREATE_DATE > '2022-01-26 15:00:00';";
 
     // 根据编排的环节id转成成服开对应的环节id。存在一对多映射关系，返回多个去查询只会匹配到一个报文
-    private static final String GET_FK_TACHE_ID_SQL = "SELECT fk_tache_id,port_type FROM gw_tache_map WHERE bp_tache_id = ?;";
+    private static final String GET_FK_TACHE_ID_SQL = "SELECT fk_tache_id,bp_tache_name,port_type FROM gw_tache_map WHERE bp_tache_id = ?;";
 
     // 报文差异对比结果存储
     private static final String MSG_DIFF_SQL = "INSERT INTO GW_MSG_DIFF (order_id,work_order_id,fk_xml,bp_xml,diff,create_date) VALUES(?,?,?,?,?,now())";
@@ -102,15 +102,91 @@ public class MessageTask {
         String msgCode = MapUtils.getString(ocApiInstMap, "MSG_CODE");
         String[] fields = msgCode.split("#");
         String orderCode = fields[1];
+
+        String sql = "SELECT a.API_CODE FROM od_api_inst a WHERE a.msg_code = ?;";
+        Map<String, Object> apiCodeMap = bpJdbcTemplate.queryForMap(sql, msgCode);
+        String apiCode = MapUtils.getString(apiCodeMap, "API_CODE", "");
+        if (apiCode.equals("CFS_ADSL_INSTALL_API")) {
+            // 宽带新装
+            orderCode = "8712109271535023734";
+        } else if (apiCode.equals("CFS_ADSL_MOVE_API")) {
+            // 宽带移机
+            orderCode = "8832007141714250783";
+        } else if (apiCode.equals("CFS_ADSL_DEL_API")) {
+            // 宽带拆机
+            orderCode = "8732101071657121937";
+        } else if (apiCode.equals("CFS_ADSL_MOD_BDTYPE_API")) {
+            // 改绑定类型
+            orderCode = "8711908210958588660";
+        } else if (apiCode.equals("CFS_ADSL_MOD_JRNUM_API")) {
+            // 宽带改接入数
+            orderCode = "8712012242241101826";
+        } else if (apiCode.equals("CFS_ADSL_MOD_PORT_API")) {
+            // 宽带改端口
+            orderCode = "8832111151050015641";
+        } else if (apiCode.equals("CFS_ADSL_MOD_SPEED_API")) {
+            // 宽带改速率
+            orderCode = "8712102261537212158";
+        } else if (apiCode.equals("CFS_ADSL_STOP_API")) {
+            // 宽带停机
+            orderCode = "8712010301005501485";
+        } else if (apiCode.equals("CFS_ADSL_RECOVERY_API")) {
+            // 宽带复机
+            orderCode = "8732010131508375989";
+        } else if (apiCode.equals("CFS_PSTN_INSTALL_API")) {
+            // 固话装
+            orderCode = "8722007021529359545";
+        } else if (apiCode.equals("CFS_PSTN_DEL_API")) {
+            // 固话拆
+            orderCode = "8712005281736070767";
+        } else if (apiCode.equals("CFS_PSTN_MODIFY_API")) {
+            // 固话改
+            orderCode = "8712009161528252741";
+        } else if (apiCode.equals("CFS_PSTN_STOP_API")) {
+            // 固话停
+            orderCode = "8712104290929002564";
+        } else if (apiCode.equals("CFS_PSTN_RECOVERY_API")) {
+            // 固话复
+            orderCode = "8831909061655377122";
+        } else if (apiCode.equals("CFS_PSTN_MOD_NUM_API")) {
+            //  固话改号
+            orderCode = "8711908140018489059";
+        } else if (apiCode.equals("CFS_PSTN_MOVE_API")) {
+            //  固话移
+            orderCode = "8742111181055506666";
+        } else {
+            throw new RuntimeException("未知 apiCode -> " + apiCode);
+        }
+
         // 通过 编排环节id 查询配置表 转换得到 服开环节id
         List<Map<String, Object>> tacheMapList = bpJdbcTemplate.queryForList(GET_FK_TACHE_ID_SQL, bpTacheId);
         if (tacheMapList.isEmpty()) {
             logger.error("根据编排环节id:{} 找不到对应的服开环节id", bpTacheId);
             return;
         }
-        // 8792112241308295455 资源
-        // 8722011161040291581 综调
-        Map<String, String> messageMap = getFkMessage(tacheMapList, "8792112241308295455");
+
+        // 判断当前是否需要跳过
+        boolean checkOrderDealContinue = false;
+        String bpTacheName = null;
+        String[] array = {"网元施工", "网元平台施工", "网元平台施工_拆"};
+        String jumpTacheName = null;
+        for (Map<String, Object> map : tacheMapList) {
+            bpTacheName = MapUtils.getString(map, "bp_tache_name", "");
+            for (String tacheName : array) {
+                if (ObjectUtils.nullSafeEquals(tacheName, bpTacheName)) {
+                    checkOrderDealContinue = true;
+                    jumpTacheName = tacheName;
+                    break;
+                }
+            }
+        }
+
+        if (checkOrderDealContinue) {
+            logger.info("该环节跳过:{}", jumpTacheName);
+            return;
+        }
+
+        Map<String, String> messageMap = getFkMessage(tacheMapList, orderCode);
 
         // 服开派单报文
         String fkSendOrderMessage = MapUtils.getString(messageMap, "IOM_XML", "");
@@ -164,7 +240,6 @@ public class MessageTask {
         String receiptUrl = MapUtils.getString(messageMap, "url");
         // 发起回单
         String result = HttpUtils.callWebService(fkBackOrderMessage, receiptUrl);
-        result = ParseUtil.xmlRoughParse(result, "root");
         logger.info(" ===== 回单结果： [{}] ==== ", result);
 
         Assert.notNull(bpMessage, "编排对比报文不能为空");
