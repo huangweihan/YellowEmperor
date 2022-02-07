@@ -145,14 +145,13 @@ public class MessageTask {
             if (checkMap == null) {
                 // 第一次
                 String failSql = "insert into gw_bp_response_logs (work_order_id, level, update_time, create_date) values (?,?,?,now());";
-                //  calendar.add(Calendar.MINUTE, 5);
-                calendar.add(Calendar.SECOND, 20);
+                calendar.add(Calendar.SECOND, 30);
                 bpJdbcTemplate.update(failSql, bpWorkOrderId, 1, calendar.getTime());
                 return;
             }
 
             int level = MapUtils.getIntValue(checkMap, "level");
-            calendar.add(Calendar.SECOND, Math.min(level * 5, 30));
+            calendar.add(Calendar.SECOND, Math.min(level * 30, 60));
             // calendar.add(Calendar.MINUTE, Math.min(level * 5, 30));
             String failSql = "update gw_bp_response_logs set level = level + 1,update_time = ? where work_order_id = ?";
             bpJdbcTemplate.update(failSql, calendar.getTime(), bpWorkOrderId);
@@ -185,6 +184,11 @@ public class MessageTask {
         // 发起回单
         String result = HttpUtils.callWebService(fkBackOrderMessage, receiptUrl);
         logger.info(" ===== 回单结果： [{}] ==== ", result);
+
+        if (checkMap != null) {
+            String updateBackSuccessSql = "DELETE FROM gw_bp_response_logs WHERE work_order_id = ?";
+            bpJdbcTemplate.update(updateBackSuccessSql, bpWorkOrderId);
+        }
 
         Assert.notNull(bpMessage, "编排对比报文不能为空");
         Assert.notNull(fkSendOrderMessage, "服开对比报文不能为空");
