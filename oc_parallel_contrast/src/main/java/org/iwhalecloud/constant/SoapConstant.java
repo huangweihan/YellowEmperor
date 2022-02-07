@@ -4,7 +4,7 @@ public class SoapConstant {
 
     private SoapConstant(){}
 
-    // 统一资源回单soap头
+    // 资源回单soap头
     public static String RES_BACK_SOAP_HEAD = "<soapenv:Envelope\n" +
             "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
             "    xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\n" +

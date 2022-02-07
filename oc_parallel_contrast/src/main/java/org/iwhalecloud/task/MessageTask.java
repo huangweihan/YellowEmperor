@@ -37,8 +37,7 @@ public class MessageTask {
     private static final Logger logger = LoggerFactory.getLogger(MessageTask.class);
 
     // 编排查询已派发未回单
-    // private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD')  ";
-    private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD') AND CREATE_DATE > '2022-01-26 15:00:00';";
+    private static final String BP_OC_API_INST_SQL = "SELECT ID,TACHE_ID,MSG_CODE FROM oc_api_inst WHERE state in ('10D', '10RD')  ";
 
     // 根据编排的环节id转成成服开对应的环节id。存在一对多映射关系，返回多个去查询只会匹配到一个报文
     private static final String GET_FK_TACHE_ID_SQL = "SELECT fk_tache_id,bp_tache_name,port_type FROM gw_tache_map WHERE bp_tache_id = ?;";
@@ -56,8 +55,7 @@ public class MessageTask {
     @Autowired
     private InterfaceConfig interfaceConfig;
 
-    // @Scheduled(cron = "${time.task.cron}")
-    @Scheduled(cron = "0/10 * * * * ? ")
+     @Scheduled(cron = "${time.task.cron}")
     public void endAlarmMessage() throws Exception {
         logger.info(" =========== 定时任务开启 =========== ");
         // 查询编排 派单未回单 的记录
@@ -70,7 +68,7 @@ public class MessageTask {
         for (Map<String, Object> ocApiInstMap : ocApiInstList) {
             try {
                 execute(ocApiInstMap);
-            } catch (Exception e){
+            } catch (Exception e) {
                 logger.error(e.getMessage());
             }
         }
@@ -103,61 +101,6 @@ public class MessageTask {
         String[] fields = msgCode.split("#");
         String orderCode = fields[1];
 
-        String sql = "SELECT a.API_CODE FROM od_api_inst a WHERE a.msg_code = ?;";
-        Map<String, Object> apiCodeMap = bpJdbcTemplate.queryForMap(sql, msgCode);
-        String apiCode = MapUtils.getString(apiCodeMap, "API_CODE", "");
-        if (apiCode.equals("CFS_ADSL_INSTALL_API")) {
-            // 宽带新装
-            orderCode = "8712109271535023734";
-        } else if (apiCode.equals("CFS_ADSL_MOVE_API")) {
-            // 宽带移机
-            orderCode = "8832007141714250783";
-        } else if (apiCode.equals("CFS_ADSL_DEL_API")) {
-            // 宽带拆机
-            orderCode = "8732101071657121937";
-        } else if (apiCode.equals("CFS_ADSL_MOD_BDTYPE_API")) {
-            // 改绑定类型
-            orderCode = "8711908210958588660";
-        } else if (apiCode.equals("CFS_ADSL_MOD_JRNUM_API")) {
-            // 宽带改接入数
-            orderCode = "8712012242241101826";
-        } else if (apiCode.equals("CFS_ADSL_MOD_PORT_API")) {
-            // 宽带改端口
-            orderCode = "8832111151050015641";
-        } else if (apiCode.equals("CFS_ADSL_MOD_SPEED_API")) {
-            // 宽带改速率
-            orderCode = "8712102261537212158";
-        } else if (apiCode.equals("CFS_ADSL_STOP_API")) {
-            // 宽带停机
-            orderCode = "8712010301005501485";
-        } else if (apiCode.equals("CFS_ADSL_RECOVERY_API")) {
-            // 宽带复机
-            orderCode = "8732010131508375989";
-        } else if (apiCode.equals("CFS_PSTN_INSTALL_API")) {
-            // 固话装
-            orderCode = "8722007021529359545";
-        } else if (apiCode.equals("CFS_PSTN_DEL_API")) {
-            // 固话拆
-            orderCode = "8712005281736070767";
-        } else if (apiCode.equals("CFS_PSTN_MODIFY_API")) {
-            // 固话改
-            orderCode = "8712009161528252741";
-        } else if (apiCode.equals("CFS_PSTN_STOP_API")) {
-            // 固话停
-            orderCode = "8712104290929002564";
-        } else if (apiCode.equals("CFS_PSTN_RECOVERY_API")) {
-            // 固话复
-            orderCode = "8831909061655377122";
-        } else if (apiCode.equals("CFS_PSTN_MOD_NUM_API")) {
-            //  固话改号
-            orderCode = "8711908140018489059";
-        } else if (apiCode.equals("CFS_PSTN_MOVE_API")) {
-            //  固话移
-            orderCode = "8742111181055506666";
-        } else {
-            throw new RuntimeException("未知 apiCode -> " + apiCode);
-        }
-
         // 通过 编排环节id 查询配置表 转换得到 服开环节id
         List<Map<String, Object>> tacheMapList = bpJdbcTemplate.queryForList(GET_FK_TACHE_ID_SQL, bpTacheId);
         if (tacheMapList.isEmpty()) {
@@ -182,7 +125,7 @@ public class MessageTask {
         }
 
         if (checkOrderDealContinue) {
-            logger.info("该环节跳过:{}", jumpTacheName);
+            logger.info("当前环节是：{}跳过处理", jumpTacheName);
             return;
         }
 
@@ -194,7 +137,7 @@ public class MessageTask {
         String fkBackOrderMessage = MapUtils.getString(messageMap, "OUT_XML", "");
 
         // 服开回单和派单报文如果为空，那么不进行回单以及报文比对
-        if ( !StringUtils.hasText(fkSendOrderMessage) && !StringUtils.hasText(fkSendOrderMessage)) {
+        if (!StringUtils.hasText(fkSendOrderMessage) && !StringUtils.hasText(fkSendOrderMessage)) {
 
             logger.info("服开派单报文为空，不进行回单以及报文比对！");
             Calendar calendar = Calendar.getInstance();
@@ -202,8 +145,8 @@ public class MessageTask {
             if (checkMap == null) {
                 // 第一次
                 String failSql = "insert into gw_bp_response_logs (work_order_id, level, update_time, create_date) values (?,?,?,now());";
-               //  calendar.add(Calendar.MINUTE, 5);
-               calendar.add(Calendar.SECOND, 20);
+                //  calendar.add(Calendar.MINUTE, 5);
+                calendar.add(Calendar.SECOND, 20);
                 bpJdbcTemplate.update(failSql, bpWorkOrderId, 1, calendar.getTime());
                 return;
             }
@@ -212,7 +155,7 @@ public class MessageTask {
             calendar.add(Calendar.SECOND, Math.min(level * 5, 30));
             // calendar.add(Calendar.MINUTE, Math.min(level * 5, 30));
             String failSql = "update gw_bp_response_logs set level = level + 1,update_time = ? where work_order_id = ?";
-            bpJdbcTemplate.update(failSql, calendar.getTime(), bpWorkOrderId );
+            bpJdbcTemplate.update(failSql, calendar.getTime(), bpWorkOrderId);
             return;
         }
 
@@ -220,7 +163,7 @@ public class MessageTask {
         String requestType = MapUtils.getString(messageMap, "type");
         // 订单状态
         String state = MapUtils.getString(messageMap, "state");
-        if("10R".equals(state)) {
+        if ("10R".equals(state)) {
             // 退单
             fkBackOrderMessage = replaceMessage(fkBackOrderMessage, bpWorkOrderId, requestType);
             if ("res".equals(requestType)) {
@@ -230,6 +173,7 @@ public class MessageTask {
                 fkBackOrderMessage = addSoapHead(fkBackOrderMessage, SoapConstant.ZD_QUIT_ORDER_SOAP_HEAD);
                 HttpUtils.callWebService(fkBackOrderMessage, interfaceConfig.getIntegratedSchedulWebServiceUrl());
             }
+            logger.info("退单成功！");
             return;
         }
 
@@ -348,7 +292,7 @@ public class MessageTask {
                 sendOrderMap = messageDao.queryZdSendOrderMessage(orderCode, fkTacheId);
                 backOrderMap = messageDao.queryZdBackOrderMessage(orderCode, fkTacheId);
             }
-            if (sendOrderMap != null  ) {
+            if (sendOrderMap != null) {
                 messageMap.put("port_type", MapUtils.getString(tacheMap, "port_type"));
                 messageMap.put("url", MapUtils.getString(requestMap, "url"));
                 messageMap.put("type", type);
